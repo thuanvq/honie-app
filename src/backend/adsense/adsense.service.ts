@@ -1,12 +1,35 @@
 import { Injectable } from '@nestjs/common';
-import { MongodbService } from '../mongodb/mongodb.service';
-import { COUNTRY_CODE } from '../../constants';
+import { MongodbService } from '../mongodb/mongodb.service'; // Adjust the import path as needed
+import { COUNTRY_CODE } from '@src/constants';
 
 @Injectable()
 export class AdsenseService {
   constructor(private readonly mongodbService: MongodbService) {}
 
-  async getAdsenseData(): Promise<any[]> {
+  async getAdsenseData(
+    page: number = 1,
+    limit: number = 100,
+    sortBy: string = 'rpm',
+    order: string = 'asc',
+  ): Promise<any[]> {
+    const SORT_FIELDS = {
+      blogCount: 'blogCount',
+      rpm: 'todayReport.pageRPM',
+      views: 'todayReport.pageViews',
+      impressions: 'todayReport.impressions',
+      today: 'today',
+      yesterday: 'yesterday',
+      month: 'month',
+      balance: 'balance',
+      limit: 'limit',
+      updated: 'todayReport.updatedAt',
+      country: 'country',
+    };
+
+    const skip = (page - 1) * limit;
+    const sortOptions = {};
+    sortOptions[SORT_FIELDS[sortBy]] = order === 'desc' ? -1 : 1;
+
     const data = await this.mongodbService.fetchData(
       'google_adsense',
       {},
@@ -23,10 +46,11 @@ export class AdsenseService {
         utc: 1,
         blogCount: 1,
       },
-      {},
-      0,
-      100,
-    ); // Customize query as needed
+      sortOptions,
+      skip,
+      limit,
+    );
+
     return data.map((d) => {
       return {
         invite: d.email?.replace('@minori.com.vn', ''),
