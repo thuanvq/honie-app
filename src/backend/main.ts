@@ -1,16 +1,14 @@
-import 'reflect-metadata'; // This should be the first import
 import { app, BrowserWindow } from 'electron';
-import * as path from 'path';
-import * as url from 'url';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import * as path from 'path';
+import * as url from 'url';
 
-require('electron-reload')(__dirname, {
-  electron: path.join(__dirname, 'node_modules', '.bin', 'electron'),
-});
-let mainWindow: BrowserWindow | null = null;
+const electronReload = require('electron-reload');
 
-async function createWindow() {
+let mainWindow: BrowserWindow;
+
+function createWindow() {
   mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
@@ -20,37 +18,48 @@ async function createWindow() {
     },
   });
 
-  if (process.env.NODE_ENV === 'development') {
-    mainWindow.loadURL('http://localhost:4200');
-    mainWindow.webContents.openDevTools();
-  } else {
-    mainWindow.loadURL(
-      url.format({
-        pathname: path.join(__dirname, '../frontend/index.html'),
-        protocol: 'file:',
-        slashes: true,
-      }),
-    );
-  }
+  const startUrl =
+    process.env.ELECTRON_START_URL ||
+    url.format({
+      pathname: path.join(
+        __dirname,
+        '..',
+        '..',
+        'src',
+        'frontend',
+        'index.html',
+      ),
+      protocol: 'file:',
+      slashes: true,
+    });
+
+  mainWindow.loadURL(startUrl);
 
   mainWindow.on('closed', () => {
-    mainWindow = null;
+    mainWindow = null!;
   });
 }
 
-async function bootstrap() {
-  const nestApp = await NestFactory.create(AppModule);
-  nestApp.enableCors({
-    origin: 'file://', // Allow requests from file protocol
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    allowedHeaders: 'Content-Type, Accept',
-  });
-  await nestApp.listen(3000);
+async function startNest() {
+  const server = await NestFactory.create(AppModule);
+  await server.listen(3000);
 }
 
 app.on('ready', async () => {
-  await createWindow();
-  await bootstrap();
+  // Hot Reloading
+  electronReload(__dirname, {
+    electron: path.join(
+      __dirname,
+      '..',
+      '..',
+      'node_modules',
+      '.bin',
+      'electron',
+    ),
+  });
+
+  await startNest();
+  createWindow();
 });
 
 app.on('window-all-closed', () => {
@@ -60,7 +69,7 @@ app.on('window-all-closed', () => {
 });
 
 app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
+  if (mainWindow === null) {
     createWindow();
   }
 });
