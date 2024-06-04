@@ -14,6 +14,7 @@ export class AdsenseController {
   ) {
     const pageNum = parseInt(page, 100) || 1;
     const limitNum = parseInt(limit, 100) || 100;
+    console.log('getData', pageNum, limitNum, sortBy, order);
     return this.adsenseService.getAdsenseData(pageNum, limitNum, sortBy, order);
   }
 }

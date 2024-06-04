@@ -1,14 +1,16 @@
 document.addEventListener('DOMContentLoaded', function () {
   let currentPage = 1;
   const limit = 100;
+  let currentSort = { column: 'rpm', order: 'desc' };
 
-  function fetchData(page = 1, sortBy = 'today', order = 'asc') {
+  function fetchData(page = 1, sortBy = 'rpm', order = 'desc') {
     fetch(
       `http://localhost:3000/adsense/data?page=${page}&limit=${limit}&sortBy=${sortBy}&order=${order}`,
     )
       .then((response) => response.json())
       .then((data) => {
         populateTable(data);
+        updateSortIcons();
       })
       .catch((error) => console.error('Error fetching adsense data:', error));
   }
@@ -41,11 +43,27 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
+  function updateSortIcons() {
+    document.querySelectorAll('#adsense-table th').forEach((header) => {
+      const sortBy = header.getAttribute('data-sort');
+      if (sortBy === currentSort.column) {
+        header.innerHTML = `${header.getAttribute('data-label')} ${
+          currentSort.order === 'asc' ? '▲' : '▼'
+        }`;
+      } else {
+        header.innerHTML = header.getAttribute('data-label');
+      }
+    });
+  }
+
   document.querySelectorAll('#adsense-table th').forEach((header) => {
     header.addEventListener('click', () => {
       const sortBy = header.getAttribute('data-sort');
       const order =
-        header.getAttribute('data-order') === 'asc' ? 'desc' : 'asc';
+        currentSort.column === sortBy && currentSort.order === 'asc'
+          ? 'desc'
+          : 'asc';
+      currentSort = { column: sortBy, order: order };
       header.setAttribute('data-order', order);
       fetchData(currentPage, sortBy, order);
     });
@@ -54,14 +72,14 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('prevPage').addEventListener('click', () => {
     if (currentPage > 1) {
       currentPage--;
-      fetchData(currentPage);
+      fetchData(currentPage, currentSort.column, currentSort.order);
     }
   });
 
   document.getElementById('nextPage').addEventListener('click', () => {
     currentPage++;
-    fetchData(currentPage);
+    fetchData(currentPage, currentSort.column, currentSort.order);
   });
 
-  fetchData();
+  setTimeout(() => fetchData(), 2000);
 });
