@@ -1,11 +1,38 @@
+const { ipcRenderer } = require('electron');
+
 document.addEventListener('DOMContentLoaded', function () {
   let currentPage = 1;
   const limit = 100;
   let currentSort = { column: 'rpm', order: 'desc' };
 
-  function fetchData(page = 1, sortBy = 'rpm', order = 'desc') {
+  function fetchSummary(inviteFilter = '') {
+    fetch(`http://localhost:3000/adsense/summary?invite=${inviteFilter}`)
+      .then((response) => response.json())
+      .then((data) => {
+        document.getElementById('total-today').textContent = formatCurrency(
+          data.today,
+        );
+        document.getElementById('total-yesterday').textContent = formatCurrency(
+          data.yesterday,
+        );
+        document.getElementById('total-month').textContent = formatCurrency(
+          data.month,
+        );
+        document.getElementById('total-balance').textContent = formatCurrency(
+          data.balance,
+        );
+      })
+      .catch((error) => console.error('Error fetching summary data:', error));
+  }
+
+  function fetchData(
+    page = 1,
+    sortBy = 'rpm',
+    order = 'desc',
+    inviteFilter = '',
+  ) {
     fetch(
-      `http://localhost:3000/adsense/data?page=${page}&limit=${limit}&sortBy=${sortBy}&order=${order}`,
+      `http://localhost:3000/adsense/data?page=${page}&limit=${limit}&sortBy=${sortBy}&order=${order}&invite=${inviteFilter}`,
     )
       .then((response) => response.json())
       .then((data) => {
@@ -23,20 +50,20 @@ document.addEventListener('DOMContentLoaded', function () {
       tr.innerHTML = `
         <td>${(currentPage - 1) * 100 + index + 1}</td>
         <td>${row.invite}</td>
-        <td>${row.pid}</td>
+        <td><a href="#" onclick="openDetail('${row.pid}')">${row.pid}</a></td>
         <td>${row.country || ''}</td>
-        <td>${row.utc || ''}</td>
-        <td>${row.limit || ''}</td>
-        <td>${row.blogs || ''}</td>
+        <td style="text-align: right;">${row.utc || ''}</td>
+        <td style="text-align: right;">${row.limit || ''}</td>
+        <td style="text-align: right;">${formatNumber(row.blogs) || ''}</td>
         <td>${row.wait || ''}</td>
-        <td>${row.rpm || ''}</td>
-        <td>${row.views || ''}</td>
-        <td>${row.impressions || ''}</td>
-        <td>${row.clicks || ''}</td>
-        <td>${row.today || ''}</td>
-        <td>${row.yesterday || ''}</td>
-        <td>${row.month || ''}</td>
-        <td>${row.balance || ''}</td>
+        <td style="text-align: right;">${formatCurrency(row.rpm)}</td>
+        <td style="text-align: right;">${formatNumber(row.views)}</td>
+        <td style="text-align: right;">${formatNumber(row.impressions)}</td>
+        <td style="text-align: right;">${row.clicks || ''}</td>
+        <td style="text-align: right;">${formatCurrency(row.today)}</td>
+        <td style="text-align: right;">${formatCurrency(row.yesterday)}</td>
+        <td style="text-align: right;">${formatCurrency(row.month)}</td>
+        <td style="text-align: right;">${formatCurrency(row.balance)}</td>
         <td>${row.updated || ''}</td>
       `;
       tbody.appendChild(tr);
@@ -47,39 +74,81 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('#adsense-table th').forEach((header) => {
       const sortBy = header.getAttribute('data-sort');
       if (sortBy === currentSort.column) {
-        header.innerHTML = `${header.getAttribute('data-label')} ${
+        header.innerHTML = `${header.getAttribute(
+          'data-label',
+        )} <span style="font-size: 12px; color: #aaa;">${
           currentSort.order === 'asc' ? '▲' : '▼'
-        }`;
+        }</span>`;
       } else {
         header.innerHTML = header.getAttribute('data-label');
       }
     });
   }
 
+  window.openDetail = function (pid) {
+    ipcRenderer.send('open-detail-window', pid);
+  };
+
   document.querySelectorAll('#adsense-table th').forEach((header) => {
     header.addEventListener('click', () => {
       const sortBy = header.getAttribute('data-sort');
       const order =
-        currentSort.column === sortBy && currentSort.order === 'asc'
-          ? 'desc'
-          : 'asc';
+        currentSort.column === sortBy && currentSort.order === 'desc'
+          ? 'asc'
+          : 'desc';
       currentSort = { column: sortBy, order: order };
       header.setAttribute('data-order', order);
+      currentPage = 1;
       fetchData(currentPage, sortBy, order);
     });
   });
 
-  document.getElementById('prevPage').addEventListener('click', () => {
+  document.getElementById('prevPageTop').addEventListener('click', () => {
     if (currentPage > 1) {
       currentPage--;
       fetchData(currentPage, currentSort.column, currentSort.order);
     }
   });
 
-  document.getElementById('nextPage').addEventListener('click', () => {
+  document.getElementById('nextPageTop').addEventListener('click', () => {
     currentPage++;
     fetchData(currentPage, currentSort.column, currentSort.order);
   });
 
-  setTimeout(() => fetchData(), 2000);
+  document.getElementById('prevPageBottom').addEventListener('click', () => {
+    if (currentPage > 1) {
+      currentPage--;
+      fetchData(currentPage, currentSort.column, currentSort.order);
+    }
+  });
+
+  document.getElementById('nextPageBottom').addEventListener('click', () => {
+    currentPage++;
+    fetchData(currentPage, currentSort.column, currentSort.order);
+  });
+
+  setTimeout(() => {
+    fetchData();
+    fetchSummary();
+  }, 2000);
+
+  const inviteFilterInput = document.getElementById('inviteFilter');
+
+  inviteFilterInput.addEventListener('keyup', () => {
+    const inviteFilter = inviteFilterInput.value.trim();
+    fetchData(currentPage, currentSort.column, currentSort.order, inviteFilter);
+    fetchSummary(inviteFilter);
+  });
 });
+
+function formatCurrency(value) {
+  return value !== undefined && value !== null ? `${value.toFixed(2)} $` : '';
+}
+
+function formatNumber(value) {
+  return value ? value.toLocaleString() : '';
+}
+
+function formatPercent(value) {
+  return value ? `${(value * 100).toFixed(2)}%` : '';
+}

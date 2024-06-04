@@ -1,38 +1,37 @@
+// adsense.service.ts
+
 import { Injectable } from '@nestjs/common';
-import { MongodbService } from '../mongodb/mongodb.service'; // Adjust the import path as needed
-import { COUNTRY_CODE } from '@src/constants';
+import { MongodbService } from '../mongodb/mongodb.service';
 
 @Injectable()
 export class AdsenseService {
   constructor(private readonly mongodbService: MongodbService) {}
 
   async getAdsenseData(
-    page: number = 1,
-    limit: number = 100,
+    page: string = '1',
+    limit: string = '100',
     sortBy: string = 'rpm',
-    order: string = 'asc',
+    order: string = 'desc',
+    invite: string,
   ): Promise<any[]> {
     const SORT_FIELDS = {
-      blogCount: 'blogCount',
       rpm: 'todayReport.pageRPM',
       views: 'todayReport.pageViews',
       impressions: 'todayReport.impressions',
-      today: 'today',
-      yesterday: 'yesterday',
-      month: 'month',
-      balance: 'balance',
-      limit: 'limit',
       updated: 'todayReport.updatedAt',
-      country: 'country',
+      clicks: 'todayReport.clicks',
+      invite: 'email',
     };
 
-    const skip = (page - 1) * limit;
-    const sortOptions = {};
-    sortOptions[SORT_FIELDS[sortBy]] = order === 'desc' ? -1 : 1;
-
+    const where: Record<string, any> = {
+      'sites.status': 'Ready',
+      deletedAt: null,
+      error: null,
+    };
+    if (invite) where.email = new RegExp(invite.toLowerCase());
     const data = await this.mongodbService.fetchData(
       'google_adsense',
-      {},
+      where,
       {
         today: 1,
         yesterday: 1,
@@ -46,19 +45,20 @@ export class AdsenseService {
         utc: 1,
         blogCount: 1,
       },
-      sortOptions,
-      skip,
-      limit,
+      { [SORT_FIELDS[sortBy] || sortBy]: order === 'asc' ? 1 : -1 },
+      (Number(page) - 1) * Number(limit),
+      Number(limit),
     );
 
     return data.map((d) => {
       return {
         invite: d.email?.replace('@minori.com.vn', ''),
         pid: d.pid,
-        country: COUNTRY_CODE[d.country],
+        country: d.country,
         utc: d.utc,
-        limit: d.limit?.replace(' 2024', ''),
+        limit: d.limit,
         blogs: d.blogCount,
+        wait: d.wait,
         rpm: d.todayReport?.pageRPM,
         views: d.todayReport?.pageViews,
         impressions: d.todayReport?.impressions,
@@ -70,5 +70,31 @@ export class AdsenseService {
         updated: d.todayReport?.updatedAt,
       };
     });
+  }
+
+  async getAdsenseSummary(invite: string): Promise<any> {
+    const where: Record<string, any> = {
+      'sites.status': 'Ready',
+      deletedAt: null,
+      error: null,
+    };
+    if (invite) where.email = new RegExp(invite.toLowerCase());
+    const result = await this.mongodbService.aggregate({
+      collectionName: 'google_adsense',
+      match: where,
+      group: {
+        _id: '',
+        today: { $sum: '$today' },
+        yesterday: { $sum: '$yesterday' },
+        month: { $sum: '$month' },
+        balance: { $sum: '$balance' },
+      },
+    });
+
+    return result[0];
+  }
+
+  async getAdsenseDetail(pid: string): Promise<any> {
+    return this.mongodbService.findOne('google_adsense', { pid });
   }
 }

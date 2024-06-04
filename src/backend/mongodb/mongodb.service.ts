@@ -26,14 +26,15 @@ export class MongodbService implements OnModuleInit {
     collectionName: string,
     condition: object,
     projection: object,
-    sort: Record<string, 1 | -1>, // Ensure sort is typed correctly
-    skip: number,
-    limit: number,
+    sort?: Record<string, 1 | -1>, // Ensure sort is typed correctly
+    skip?: number,
+    limit?: number,
   ): Promise<any[]> {
     const collection = this.getCollection<Document>(collectionName);
     return collection
       .find(condition, { projection })
       .sort(sort)
+      .collation({ locale: 'en_US', numericOrdering: true })
       .skip(skip)
       .limit(limit)
       .toArray();
@@ -55,5 +56,26 @@ export class MongodbService implements OnModuleInit {
 
   async closeConnection() {
     await this.client.close();
+  }
+
+  async findOne(collectionName: string, condition: object): Promise<any> {
+    const collection = this.getCollection<Document>(collectionName);
+    return collection.findOne(condition);
+  }
+
+  async aggregate(input: {
+    collectionName: string;
+    match?: any;
+    group: any;
+    sort?: any;
+    project?: any;
+  }) {
+    const { collectionName, match, group, sort, project } = input;
+    const aggregateArray: any[] = [{ $group: group }];
+    if (match) aggregateArray.unshift({ $match: match });
+    if (sort) aggregateArray.push({ $sort: sort });
+    if (project) aggregateArray.push({ $project: project });
+    const collection = this.getCollection<Document>(collectionName);
+    return collection.aggregate(aggregateArray).toArray();
   }
 }
