@@ -1,0 +1,73 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f9;
+  margin: 0;
+  padding: 20px;
+}
+
+.container {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #ffffff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  text-align: center;
+  color: #333333;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+th,
+td {
+  padding: 10px;
+  border: 1px solid #dddddd;
+  text-align: left;
+  white-space: nowrap;
+}
+
+th {
+  background-color: #f4f4f9;
+}
+
+tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+td:nth-child(1), /* Index */
+td:nth-child(2), /* Invite */
+td:nth-child(3), /* PID */
+td:nth-child(4), /* Country */
+td:nth-child(5), /* UTC */
+td:nth-child(6), /* Limit */
+td:nth-child(7), /* Blogs */
+td:nth-child(8) {
+  /* Wait */
+  text-align: left;
+}
+
+td:nth-child(9), /* RPM */
+td:nth-child(10), /* Views */
+td:nth-child(11), /* Impressions */
+td:nth-child(12), /* Clicks */
+td:nth-child(13), /* Today */
+td:nth-child(14), /* Yesterday */
+td:nth-child(15), /* Month */
+td:nth-child(16), /* Balance */
+td:nth-child(17) {
+  /* Updated */
+  text-align: right;
+}
+
+@media (max-width: 1200px) {
+  table {
+    display: block;
+    overflow-x: auto;
+  }
+}

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Database Data Viewer</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="adsense.html">Adsense</a></li>
+        <!-- Add more menu items as needed -->
+      </ul>
+    </nav>
+    <div class="container">
+      <h1>Database Data Viewer</h1>
+      <div class="form-group">
+        <label for="collection-select">Collection:</label>
+        <select id="collection-select"></select>
+      </div>
+      <div class="form-group">
+        <label for="query-condition">Condition:</label>
+        <input
+          type="text"
+          id="query-condition"
+          placeholder='e.g. {"field": "value"}'
+        />
+      </div>
+      <div class="form-group">
+        <label for="query-projection">Projection:</label>
+        <input
+          type="text"
+          id="query-projection"
+          placeholder='e.g. {"field": 1}'
+        />
+      </div>
+      <div class="form-group">
+        <label for="query-sort">Sort:</label>
+        <input type="text" id="query-sort" placeholder='e.g. {"_id": -1}' />
+      </div>
+      <button id="apply-query">Apply Query</button>
+      <div class="pagination">
+        <button id="prev">Previous</button>
+        <span id="page-info"></span>
+        <button id="next">Next</button>
+      </div>
+      <div id="adsense-data"></div>
+    </div>
+    <script src="viewer.js"></script>
+  </body>
+</html>
