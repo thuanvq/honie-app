@@ -1,28 +1,21 @@
 if (typeof CommonListComponent === 'undefined') {
+  let init = false;
   class CommonListComponent {
     constructor(config) {
       this.config = config;
       this.currentPage = 1;
-      this.rowsPerPage = 100; // Default to 100 rows per page
+      this.rowsPerPage = 10; // Default to 10 rows per page
       this.currentSort = { column: '', order: 'asc' };
       this.debounceTimer = null;
-      this.doneIcon = '';
       this.init();
     }
 
     async init() {
       try {
-        const response = await fetch(this.config.apiEndpoint);
-        const { title, headers, filters, data, totalRecords } = await response.json();
-
-        document.title = title;
-        document.getElementById('list-title').innerText = title;
-
         this.tableHeaders = document.getElementById('table-headers');
         this.tableBody = document.querySelector('#common-table tbody');
+        this.totalRecords = document.getElementById('total-records');
 
-        this.populateFilters(filters);
-        this.populateHeaders(headers);
         this.fetchAndRenderData();
       } catch (error) {
         console.error('Error initializing component:', error);
@@ -78,7 +71,16 @@ if (typeof CommonListComponent === 'undefined') {
 
       try {
         const response = await fetch(`${this.config.apiEndpoint}?${query.toString()}`);
-        const { headers, data, totalRecords } = await response.json();
+        const { headers, data, filters, title, totalRecords } = await response.json();
+        if (!init) {
+          document.title = title;
+          document.getElementById('list-title').innerText = title;
+          this.totalRecords.innerText = `Total Records: ${totalRecords}`;
+          this.populateFilters(filters);
+          this.populateHeaders(headers);
+          this.totalRecords.innerText = `Total Records: ${totalRecords}`;
+          init = true;
+        }
 
         this.tableBody.innerHTML = ''; // Clear previous content
         this.renderTableData(headers, data);
@@ -94,6 +96,7 @@ if (typeof CommonListComponent === 'undefined') {
         let rowHTML = `<td>${(this.currentPage - 1) * this.rowsPerPage + index + 1}</td>`; // Adjusted for rowsPerPage
 
         headers.forEach((header) => {
+          let tdClass = '';
           let cellValue = item[header.key] || '';
           if (header.key === 'pid' && cellValue) {
             cellValue = `<a href="adsense-detail.html?pid=${item.pid}" target="_blank">${item.pid}</a>`;
@@ -105,12 +108,15 @@ if (typeof CommonListComponent === 'undefined') {
             } else if (item.action === 'done') {
               cellValue = `<img src="${this.doneIcon}" class="small-icon">`;
             }
+            tdClass = 'align-center';
           } else if (header.type === 'currency') {
-            cellValue = item[header.key] !== undefined ? `${item[header.key].toFixed(2)} $` : '';
+            cellValue = formatCurrency(item[header.key]);
+            tdClass = 'align-right';
           } else if (header.type === 'number') {
-            cellValue = item[header.key] !== undefined ? item[header.key].toLocaleString() : '';
+            cellValue = formatNumber(item[header.key]);
+            tdClass = 'align-right';
           }
-          rowHTML += `<td${header.key === 'action' ? ' class="align-center"' : ''}>${cellValue}</td>`;
+          rowHTML += `<td class="${tdClass}">${cellValue}</td>`;
         });
 
         tr.innerHTML = rowHTML;
@@ -123,7 +129,7 @@ if (typeof CommonListComponent === 'undefined') {
           try {
             const response = await fetch(`http://localhost:3000/adsense/wordpress?pid=${pid}`, { method: 'POST' });
             if (response.status === 201) {
-              event.target.src = './assets/done-icon.svg';
+              event.target.src = this.doneIcon;
               event.target.classList.remove('clickable');
             }
           } catch (error) {
@@ -223,4 +229,12 @@ if (typeof CommonListComponent === 'undefined') {
       })
       .catch((error) => console.error('Error loading common list:', error));
   }
+}
+
+function formatCurrency(value) {
+  return value !== undefined && value !== null ? `${value.toFixed(2)} $` : '';
+}
+
+function formatNumber(value) {
+  return value ? value.toLocaleString() : '';
 }

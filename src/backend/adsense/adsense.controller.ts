@@ -53,8 +53,14 @@ export class AdsenseController {
   }
 
   @Get('wordpress')
-  async getWebsiteWordpress(@Query('email') email: string, @Query('site') site: string) {
-    return this.adsenseService.getWebsiteWordpress(email, site);
+  async getAdsenseWordpress(
+    @Query('page') page: string,
+    @Query('limit') limit: string,
+    @Query('sortBy') sortBy: string,
+    @Query('order') order: string,
+    @Query('anything') anything: string,
+  ) {
+    return this.adsenseService.getAdsenseWordpress(page, limit, sortBy, order, anything);
   }
 
   @Post('wordpress')

@@ -3,31 +3,36 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Common List Component</title>
+    <title>Common List</title>
     <link rel="stylesheet" href="./common/list.css" />
   </head>
   <body>
-    <div id="component-root">
-      <h1 id="list-title">Common List</h1>
+    <h1 id="list-title"></h1>
+    <div class="filter-pagination-section">
       <div class="filter-section">
-        <!-- Filters will be dynamically inserted here -->
+        <label for="emailFilter">Filter by Email:</label>
+        <input type="text" id="emailFilter" placeholder="Enter email" />
+        <label for="runningFilter">Filter by Running:</label>
+        <input type="checkbox" id="runningFilter" />
       </div>
-      <div class="pagination" id="paginationTop">
+      <div class="pagination-section">
+        <span id="total-records">Total Records: 0</span>
         <button id="prevPageTop">Previous</button>
         <button id="nextPageTop">Next</button>
       </div>
-      <table id="common-table">
-        <thead>
-          <tr id="table-headers">
-            <!-- Headers will be populated here -->
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-      <div class="pagination" id="paginationBottom">
-        <button id="prevPageBottom">Previous</button>
-        <button id="nextPageBottom">Next</button>
-      </div>
     </div>
+    <table id="common-table">
+      <thead>
+        <tr id="table-headers">
+          <!-- Headers will be populated here -->
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <div class="bottom-pagination-section">
+      <button id="prevPageBottom">Previous</button>
+      <button id="nextPageBottom">Next</button>
+    </div>
+    <script src="./common/list.js"></script>
   </body>
 </html>

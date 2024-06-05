@@ -1,7 +1,7 @@
 // adsense.service.ts
 
 import { Injectable } from '@nestjs/common';
-import { COUNTRY_CODE } from '@src/constants';
+import { COUNTRY_CODE, LIST_RESPONSE, SORT_FIELDS } from '@src/constants';
 import { MongodbService } from '../mongodb/mongodb.service';
 
 @Injectable()
@@ -212,17 +212,26 @@ export class AdsenseService {
     return true;
   }
 
-  async getWebsiteWordpress(email: string, site: string) {
+  async getAdsenseWordpress(
+    page: string = '1',
+    limit: string = '100',
+    sortBy: string = 'email',
+    order: string = 'desc',
+    anything: string,
+  ): Promise<LIST_RESPONSE> {
     const where: Record<string, any> = {
-      blogCount: { $not: { $gt: 0 } },
-      'sites.status': 'Ready',
+      sites: { $elemMatch: { name: { $not: /pantip.com|minigame.vip|html5gameportal.com/ }, status: 'Ready' } },
       deletedAt: null,
       error: null,
     };
-    if (email) where.email = new RegExp(email, 'i');
-    if (site) where.sites = { $elemMatch: { name: new RegExp(site, 'i'), status: 'Ready' } };
+    if (anything)
+      where.$or = [
+        { email: new RegExp(anything, 'i') },
+        { pid: new RegExp(anything, 'i') },
+        { sites: { $elemMatch: { name: new RegExp(anything, 'i'), status: 'Ready' } } },
+      ];
 
-    const adsenseData = await this.mongodbService.fetchData(
+    let data = await this.mongodbService.fetchData(
       'google_adsense',
       where,
       {
@@ -240,12 +249,12 @@ export class AdsenseService {
         needBlog: 1,
         sites: 1,
       },
-      { email: -1 },
-      0,
-      1000,
+      { [SORT_FIELDS[sortBy] || sortBy || 'email']: order === 'asc' ? 1 : -1 },
+      (Number(page) - 1) * Number(limit),
+      Number(limit),
     );
 
-    const data = adsenseData.map((data) => {
+    data = data.map((data) => {
       const sites = data.sites
         .filter((s) => s.status === 'Ready')
         .map((s) => s.name)
@@ -269,19 +278,16 @@ export class AdsenseService {
       { label: 'PID', key: 'pid', sortable: true, link: true },
       { label: 'Limit', key: 'limit', sortable: true },
       { label: 'Action', key: 'action', sortable: false },
-      { label: 'RPM', key: 'rpm', sortable: true },
-      { label: 'Views', key: 'views', sortable: true },
-      { label: 'Today', key: 'today', sortable: true },
-      { label: 'Yesterday', key: 'yesterday', sortable: true },
-      { label: 'Month', key: 'month', sortable: true },
-      { label: 'Balance', key: 'balance', sortable: true },
-      { label: 'Sites', key: 'sites', sortable: true },
+      { label: 'RPM', key: 'rpm', sortable: true, type: 'currency' },
+      { label: 'Views', key: 'views', sortable: true, type: 'number' },
+      { label: 'Today', key: 'today', sortable: true, type: 'currency' },
+      { label: 'Yesterday', key: 'yesterday', sortable: true, type: 'currency' },
+      { label: 'Month', key: 'month', sortable: true, type: 'currency' },
+      { label: 'Balance', key: 'balance', sortable: true, type: 'currency' },
+      { label: 'Sites', key: 'sites', sortable: false },
     ];
     const totalRecords = 450;
-    const filters = [
-      { key: 'email', label: 'Email', type: 'text' },
-      { key: 'running', label: 'Running', type: 'checkbox' },
-    ];
+    const filters = [{ key: 'anything', label: 'Anything', type: 'text' }];
     return { title: 'Adsense Wordpress', headers, filters, data, totalRecords };
   }
 

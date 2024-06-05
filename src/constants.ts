@@ -8,3 +8,13 @@ export const COUNTRY_CODE: Record<string, string> = {
   'United States': 'US',
   Vietnam: 'VN',
 };
+
+export type LIST_RESPONSE = { title: string; headers: any[]; data: any[]; filters: any[]; totalRecords: number };
+
+export const SORT_FIELDS = {
+  rpm: 'todayReport.pageRPM',
+  views: 'todayReport.pageViews',
+  impressions: 'todayReport.impressions',
+  updated: 'todayReport.updatedAt',
+  clicks: 'todayReport.clicks',
+};
