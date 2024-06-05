@@ -150,6 +150,7 @@ if (typeof CommonListComponent === 'undefined') {
       headers.forEach((header) => {
         const th = document.createElement('th');
         th.textContent = header.label;
+        th.setAttribute('data-label', header.label); // Add this line
         if (header.sortable) {
           th.dataset.sort = header.key;
           th.addEventListener('click', () => this.handleSort(header.key));
@@ -159,6 +160,7 @@ if (typeof CommonListComponent === 'undefined') {
         }
         this.tableHeaders.appendChild(th);
       });
+      this.updateSortIcons(); // Add this line to update icons after headers are populated
     }
 
     handleSort(column) {
@@ -169,6 +171,20 @@ if (typeof CommonListComponent === 'undefined') {
         this.currentSort.order = 'asc';
       }
       this.fetchAndRenderData();
+      this.updateSortIcons(); // Update sort icons after sorting
+    }
+
+    updateSortIcons() {
+      document.querySelectorAll('#table-headers th').forEach((header) => {
+        const sortBy = header.getAttribute('data-sort');
+        if (sortBy === this.currentSort.column) {
+          header.innerHTML = `${header.getAttribute('data-label')} <span style="font-size: 12px; color: #aaa;">${
+            this.currentSort.order === 'asc' ? '▲' : '▼'
+          }</span>`;
+        } else {
+          header.innerHTML = header.getAttribute('data-label');
+        }
+      });
     }
 
     updatePagination(totalRecords) {
