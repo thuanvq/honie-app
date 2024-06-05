@@ -4,7 +4,7 @@ if (typeof CommonListComponent === 'undefined') {
     constructor(config) {
       this.config = config;
       this.currentPage = 1;
-      this.rowsPerPage = 10; // Default to 10 rows per page
+      this.rowsPerPage = 100;
       this.currentSort = { column: '', order: 'asc' };
       this.debounceTimer = null;
       this.init();
@@ -15,7 +15,7 @@ if (typeof CommonListComponent === 'undefined') {
         this.tableHeaders = document.getElementById('table-headers');
         this.tableBody = document.querySelector('#common-table tbody');
         this.totalRecords = document.getElementById('total-records');
-        this.summaryText = document.getElementById('summary-text'); // Add this line
+        this.summaryText = document.getElementById('summary-text');
 
         this.fetchAndRenderData();
       } catch (error) {
@@ -29,7 +29,7 @@ if (typeof CommonListComponent === 'undefined') {
         console.error('Filter section not found');
         return;
       }
-      filterSection.innerHTML = ''; // Clear previous filters
+      filterSection.innerHTML = '';
 
       filters.forEach((filter) => {
         const label = document.createElement('label');
@@ -66,7 +66,7 @@ if (typeof CommonListComponent === 'undefined') {
       });
 
       query.set('page', this.currentPage);
-      query.set('rowsPerPage', this.rowsPerPage); // Include rowsPerPage in the query
+      query.set('rowsPerPage', this.rowsPerPage);
       query.set('sortBy', this.currentSort.column);
       query.set('order', this.currentSort.order);
 
@@ -77,14 +77,14 @@ if (typeof CommonListComponent === 'undefined') {
           document.title = title;
           document.getElementById('list-title').innerText = title;
           this.totalRecords.innerText = `Total Records: ${totalRecords}`;
-          this.summaryText.innerText = summary; // Add this line
+          this.summaryText.innerText = summary;
           this.populateFilters(filters);
           this.populateHeaders(headers);
           this.totalRecords.innerText = `Total Records: ${totalRecords}`;
           init = true;
         }
 
-        this.tableBody.innerHTML = ''; // Clear previous content
+        this.tableBody.innerHTML = '';
         this.renderTableData(headers, data);
         this.updatePagination(totalRecords);
       } catch (error) {
@@ -95,7 +95,7 @@ if (typeof CommonListComponent === 'undefined') {
     renderTableData(headers, data) {
       data.forEach((item, index) => {
         const tr = document.createElement('tr');
-        let rowHTML = `<td>${(this.currentPage - 1) * this.rowsPerPage + index + 1}</td>`; // Adjusted for rowsPerPage
+        let rowHTML = `<td>${(this.currentPage - 1) * this.rowsPerPage + index + 1}</td>`;
 
         headers.forEach((header) => {
           let tdClass = '';
@@ -142,9 +142,8 @@ if (typeof CommonListComponent === 'undefined') {
     }
 
     populateHeaders(headers) {
-      this.tableHeaders.innerHTML = ''; // Clear previous headers
+      this.tableHeaders.innerHTML = '';
 
-      // Add default "No" column
       const noColumn = document.createElement('th');
       noColumn.textContent = 'No';
       this.tableHeaders.appendChild(noColumn);
@@ -152,7 +151,7 @@ if (typeof CommonListComponent === 'undefined') {
       headers.forEach((header) => {
         const th = document.createElement('th');
         th.textContent = header.label;
-        th.setAttribute('data-label', header.label); // Add this line
+        th.setAttribute('data-label', header.label);
         if (header.sortable) {
           th.dataset.sort = header.key;
           th.addEventListener('click', () => this.handleSort(header.key));
@@ -162,7 +161,7 @@ if (typeof CommonListComponent === 'undefined') {
         }
         this.tableHeaders.appendChild(th);
       });
-      this.updateSortIcons(); // Add this line to update icons after headers are populated
+      this.updateSortIcons();
     }
 
     handleSort(column) {
@@ -173,7 +172,7 @@ if (typeof CommonListComponent === 'undefined') {
         this.currentSort.order = 'asc';
       }
       this.fetchAndRenderData();
-      this.updateSortIcons(); // Update sort icons after sorting
+      this.updateSortIcons();
     }
 
     updateSortIcons() {
@@ -196,33 +195,34 @@ if (typeof CommonListComponent === 'undefined') {
       document.getElementById('prevPageBottom').disabled = this.currentPage === 1;
       document.getElementById('nextPageBottom').disabled = this.currentPage === totalPages;
 
-      document.getElementById('prevPageTop').addEventListener('click', () => {
+      const prevPageTopButton = document.getElementById('prevPageTop');
+      const nextPageTopButton = document.getElementById('nextPageTop');
+      const prevPageBottomButton = document.getElementById('prevPageBottom');
+      const nextPageBottomButton = document.getElementById('nextPageBottom');
+
+      prevPageTopButton.removeEventListener('click', this.handlePrevPageClick);
+      nextPageTopButton.removeEventListener('click', this.handleNextPageClick);
+      prevPageBottomButton.removeEventListener('click', this.handlePrevPageClick);
+      nextPageBottomButton.removeEventListener('click', this.handleNextPageClick);
+
+      this.handlePrevPageClick = () => {
         if (this.currentPage > 1) {
           this.currentPage--;
           this.fetchAndRenderData();
         }
-      });
+      };
 
-      document.getElementById('nextPageTop').addEventListener('click', () => {
+      this.handleNextPageClick = () => {
         if (this.currentPage < totalPages) {
           this.currentPage++;
           this.fetchAndRenderData();
         }
-      });
+      };
 
-      document.getElementById('prevPageBottom').addEventListener('click', () => {
-        if (this.currentPage > 1) {
-          this.currentPage--;
-          this.fetchAndRenderData();
-        }
-      });
-
-      document.getElementById('nextPageBottom').addEventListener('click', () => {
-        if (this.currentPage < totalPages) {
-          this.currentPage++;
-          this.fetchAndRenderData();
-        }
-      });
+      prevPageTopButton.addEventListener('click', this.handlePrevPageClick);
+      nextPageTopButton.addEventListener('click', this.handleNextPageClick);
+      prevPageBottomButton.addEventListener('click', this.handlePrevPageClick);
+      nextPageBottomButton.addEventListener('click', this.handleNextPageClick);
     }
 
     debounce(func, wait) {
