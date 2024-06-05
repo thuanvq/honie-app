@@ -211,4 +211,82 @@ export class AdsenseService {
     await this.mongodbService.updateOne('google_adsense', { pid }, { $inc: { needBlog: 1 } }, {});
     return true;
   }
+
+  async getWebsiteWordpress(email: string, site: string) {
+    const where: Record<string, any> = {
+      blogCount: { $not: { $gt: 0 } },
+      'sites.status': 'Ready',
+      deletedAt: null,
+      error: null,
+    };
+    if (email) where.email = new RegExp(email, 'i');
+    if (site) where.sites = { $elemMatch: { name: new RegExp(site, 'i'), status: 'Ready' } };
+
+    const adsenseData = await this.mongodbService.fetchData(
+      'google_adsense',
+      where,
+      {
+        today: 1,
+        yesterday: 1,
+        month: 1,
+        balance: 1,
+        todayReport: 1,
+        limit: 1,
+        country: 1,
+        email: 1,
+        pid: 1,
+        utc: 1,
+        blogCount: 1,
+        needBlog: 1,
+        sites: 1,
+      },
+      { email: -1 },
+      0,
+      1000,
+    );
+
+    const data = adsenseData.map((data) => {
+      const sites = data.sites
+        .filter((s) => s.status === 'Ready')
+        .map((s) => s.name)
+        .join(',');
+      return {
+        email: data.email,
+        pid: data.pid,
+        limit: data.limit,
+        rpm: data.todayReport?.pageRPM,
+        views: data.todayReport?.pageViews,
+        today: data.today,
+        yesterday: data.yesterday,
+        month: data.month,
+        balance: data.balance,
+        sites: sites,
+        action: data.needBlog ? 'done' : 'run',
+      };
+    });
+    const headers = [
+      { label: 'Email', key: 'email', sortable: true },
+      { label: 'PID', key: 'pid', sortable: true, link: true },
+      { label: 'Limit', key: 'limit', sortable: true },
+      { label: 'Action', key: 'action', sortable: false },
+      { label: 'RPM', key: 'rpm', sortable: true },
+      { label: 'Views', key: 'views', sortable: true },
+      { label: 'Today', key: 'today', sortable: true },
+      { label: 'Yesterday', key: 'yesterday', sortable: true },
+      { label: 'Month', key: 'month', sortable: true },
+      { label: 'Balance', key: 'balance', sortable: true },
+      { label: 'Sites', key: 'sites', sortable: true },
+    ];
+    const totalRecords = 450;
+    const filters = [
+      { key: 'email', label: 'Email', type: 'text' },
+      { key: 'running', label: 'Running', type: 'checkbox' },
+    ];
+    return { title: 'Adsense Wordpress', headers, filters, data, totalRecords };
+  }
+
+  async runAdsenseWordpress(pid: string) {
+    console.log('runAdsenseWordpress');
+    return true;
+  }
 }

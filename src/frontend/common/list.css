@@ -1,0 +1,95 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f9;
+  margin: 0;
+  padding: 20px;
+}
+
+h1 {
+  text-align: center;
+  color: #333333;
+}
+
+.filter-section {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.filter-section label {
+  margin-right: 10px;
+}
+
+.filter-section input {
+  margin-right: 10px;
+  padding: 5px;
+}
+
+.filter-section button {
+  padding: 5px 10px;
+  font-size: 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.filter-section button:hover {
+  background-color: #0056b3;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+th,
+td {
+  padding: 10px;
+  border: 1px solid #dddddd;
+}
+
+th {
+  background-color: #f4f4f9;
+  cursor: pointer;
+}
+
+tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+button {
+  padding: 10px 15px;
+  color: #ffffff;
+  background-color: #007bff;
+  border: none;
+  cursor: pointer;
+}
+
+button:disabled {
+  background-color: #cccccc;
+}
+
+.align-right {
+  text-align: right;
+}
+
+.small-icon {
+  width: 40%;
+}
+.clickable {
+  cursor: pointer;
+}
+.align-center {
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+}

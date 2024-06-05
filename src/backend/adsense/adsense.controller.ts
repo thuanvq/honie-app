@@ -51,4 +51,14 @@ export class AdsenseController {
   async runAdsense(@Query('pid') pid: string) {
     return this.adsenseService.runAdsense(pid);
   }
+
+  @Get('wordpress')
+  async getWebsiteWordpress(@Query('email') email: string, @Query('site') site: string) {
+    return this.adsenseService.getWebsiteWordpress(email, site);
+  }
+
+  @Post('wordpress')
+  async runAdsenseWordpress(@Query('pid') pid: string) {
+    return this.adsenseService.runAdsenseWordpress(pid);
+  }
 }

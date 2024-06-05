@@ -142,6 +142,18 @@ app.on('ready', () => {
             );
           },
         },
+        {
+          label: 'Wordpress',
+          click: () => {
+            mainWindow?.loadURL(
+              url.format({
+                pathname: path.join(__dirname, '..', 'src', 'frontend', 'adsense-wordpress.html'),
+                protocol: 'file:',
+                slashes: true,
+              }),
+            );
+          },
+        },
       ],
     },
     {
