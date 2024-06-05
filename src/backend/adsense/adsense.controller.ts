@@ -1,6 +1,6 @@
 // adsense.controller.ts
 
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Post, Query } from '@nestjs/common';
 import { AdsenseService } from './adsense.service';
 
 @Controller('adsense')
@@ -15,13 +15,7 @@ export class AdsenseController {
     @Query('order') order: string,
     @Query('invite') invite: string,
   ) {
-    return this.adsenseService.getAdsenseData(
-      page,
-      limit,
-      sortBy,
-      order,
-      invite,
-    );
+    return this.adsenseService.getAdsenseData(page, limit, sortBy, order, invite);
   }
 
   @Get('summary')
@@ -46,5 +40,15 @@ export class AdsenseController {
     @Query('name') name: string,
   ) {
     return this.adsenseService.getWebsites(status, wordpress, name);
+  }
+
+  @Get('unused')
+  async getUnused(@Query('email') email: string, @Query('site') site: string) {
+    return this.adsenseService.getUnused(email, site);
+  }
+
+  @Post('run')
+  async runAdsense(@Query('pid') pid: string) {
+    return this.adsenseService.runAdsense(pid);
   }
 }

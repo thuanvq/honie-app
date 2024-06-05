@@ -45,6 +45,7 @@ export class AdsenseService {
         pid: 1,
         utc: 1,
         blogCount: 1,
+        needBlog: 1,
       },
       { [SORT_FIELDS[sortBy] || sortBy]: order === 'asc' ? 1 : -1 },
       (Number(page) - 1) * Number(limit),
@@ -58,8 +59,8 @@ export class AdsenseService {
         country: COUNTRY_CODE[d.country] || d.country,
         utc: d.utc,
         limit: d.limit?.replace(' 2024', ''),
-        blogs: d.blogCount,
-        wait: d.wait,
+        blogs: d.blogCount || '',
+        wait: d.needBlog || '',
         rpm: d.todayReport?.pageRPM,
         views: d.todayReport?.pageViews,
         impressions: d.todayReport?.impressions,
@@ -128,7 +129,7 @@ export class AdsenseService {
       'google_adsense',
       { error: null, 'sites.status': status },
       { email: 1, pid: 1, sites: 1, fetchedAt: 1 },
-      { email: 1 },
+      { email: -1 },
       0,
       1000,
     );
@@ -150,5 +151,64 @@ export class AdsenseService {
       });
     });
     return result;
+  }
+
+  async getUnused(email: string, site: string) {
+    const where: Record<string, any> = {
+      blogCount: { $not: { $gt: 0 } },
+      'sites.status': 'Ready',
+      deletedAt: null,
+      error: null,
+    };
+    if (email) where.email = new RegExp(email, 'i');
+    if (site) where.sites = { $elemMatch: { name: new RegExp(site, 'i'), status: 'Ready' } };
+
+    const adsenseData = await this.mongodbService.fetchData(
+      'google_adsense',
+      where,
+      {
+        today: 1,
+        yesterday: 1,
+        month: 1,
+        balance: 1,
+        todayReport: 1,
+        limit: 1,
+        country: 1,
+        email: 1,
+        pid: 1,
+        utc: 1,
+        blogCount: 1,
+        needBlog: 1,
+        sites: 1,
+      },
+      { email: -1 },
+      0,
+      1000,
+    );
+
+    return adsenseData.map((data) => {
+      const sites = data.sites
+        .filter((s) => s.status === 'Ready')
+        .map((s) => s.name)
+        .join(',');
+      return {
+        email: data.email,
+        pid: data.pid,
+        limit: data.limit,
+        rpm: data.todayReport?.pageRPM,
+        views: data.todayReport?.pageViews,
+        today: data.today,
+        yesterday: data.yesterday,
+        month: data.month,
+        balance: data.balance,
+        sites: sites,
+        done: !!data.needBlog,
+      };
+    });
+  }
+
+  async runAdsense(pid: string) {
+    await this.mongodbService.updateOne('google_adsense', { pid }, { $inc: { needBlog: 1 } }, {});
+    return true;
   }
 }

@@ -48,10 +48,7 @@ export class MongodbService implements OnModuleInit {
       .toArray();
   }
 
-  async countDocuments(
-    collectionName: string,
-    condition: object,
-  ): Promise<number> {
+  async countDocuments(collectionName: string, condition: object): Promise<number> {
     const collection = this.getCollection<Document>(collectionName);
     return collection.countDocuments(condition);
   }
@@ -71,23 +68,20 @@ export class MongodbService implements OnModuleInit {
     return collection.findOne(condition);
   }
 
-  async aggregate(input: {
-    collectionName: string;
-    match?: any;
-    group: any;
-    sort?: any;
-    project?: any;
-  }) {
+  async aggregate(input: { collectionName: string; match?: any; group: any; sort?: any; project?: any }) {
     const { collectionName, match, group, sort, project } = input;
-    console.log(
-      `${logDate()} [Mongo] aggregate ${collectionName}`,
-      JSON.stringify(match),
-    );
+    console.log(`${logDate()} [Mongo] aggregate ${collectionName}`, JSON.stringify(match));
     const aggregateArray: any[] = [{ $group: group }];
     if (match) aggregateArray.unshift({ $match: match });
     if (sort) aggregateArray.push({ $sort: sort });
     if (project) aggregateArray.push({ $project: project });
     const collection = this.getCollection<Document>(collectionName);
     return collection.aggregate(aggregateArray).toArray();
+  }
+
+  async updateOne(collectionName: string, condition: object, update: object, option = {}): Promise<any> {
+    console.log(`${logDate()} [Mongo] updateOne ${collectionName}`, JSON.stringify(condition), JSON.stringify(update));
+    const collection = this.getCollection<Document>(collectionName);
+    return collection.updateOne(condition, update, option);
   }
 }

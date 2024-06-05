@@ -1,12 +1,4 @@
-import {
-  BrowserWindow,
-  Menu,
-  app,
-  screen as electronScreen,
-  globalShortcut,
-  ipcMain,
-  shell,
-} from 'electron';
+import { BrowserWindow, Menu, app, screen as electronScreen, globalShortcut, ipcMain, shell } from 'electron';
 import * as path from 'path';
 import * as url from 'url';
 
@@ -58,13 +50,7 @@ function createDetailWindow(pid: string) {
   });
 
   const detailUrl = url.format({
-    pathname: path.join(
-      __dirname,
-      '..',
-      'src',
-      'frontend',
-      'adsense-detail.html',
-    ),
+    pathname: path.join(__dirname, '..', 'src', 'frontend', 'adsense-detail.html'),
     protocol: 'file:',
     slashes: true,
     search: `?pid=${pid}`,
@@ -125,13 +111,7 @@ app.on('ready', () => {
           click: () => {
             mainWindow?.loadURL(
               url.format({
-                pathname: path.join(
-                  __dirname,
-                  '..',
-                  'src',
-                  'frontend',
-                  'adsense.html',
-                ),
+                pathname: path.join(__dirname, '..', 'src', 'frontend', 'adsense.html'),
                 protocol: 'file:',
                 slashes: true,
               }),
@@ -143,13 +123,19 @@ app.on('ready', () => {
           click: () => {
             mainWindow?.loadURL(
               url.format({
-                pathname: path.join(
-                  __dirname,
-                  '..',
-                  'src',
-                  'frontend',
-                  'adsense-error.html',
-                ),
+                pathname: path.join(__dirname, '..', 'src', 'frontend', 'adsense-error.html'),
+                protocol: 'file:',
+                slashes: true,
+              }),
+            );
+          },
+        },
+        {
+          label: 'Unused',
+          click: () => {
+            mainWindow?.loadURL(
+              url.format({
+                pathname: path.join(__dirname, '..', 'src', 'frontend', 'adsense-unused.html'),
                 protocol: 'file:',
                 slashes: true,
               }),
@@ -166,13 +152,7 @@ app.on('ready', () => {
           click: () => {
             mainWindow?.loadURL(
               url.format({
-                pathname: path.join(
-                  __dirname,
-                  '..',
-                  'src',
-                  'frontend',
-                  'websites.html',
-                ),
+                pathname: path.join(__dirname, '..', 'src', 'frontend', 'websites.html'),
                 protocol: 'file:',
                 slashes: true,
                 search: `?status=Ready`,
@@ -185,13 +165,7 @@ app.on('ready', () => {
           click: () => {
             mainWindow?.loadURL(
               url.format({
-                pathname: path.join(
-                  __dirname,
-                  '..',
-                  'src',
-                  'frontend',
-                  'websites.html',
-                ),
+                pathname: path.join(__dirname, '..', 'src', 'frontend', 'websites.html'),
                 protocol: 'file:',
                 slashes: true,
                 search: `?status=Getting ready`,
@@ -204,13 +178,7 @@ app.on('ready', () => {
           click: () => {
             mainWindow?.loadURL(
               url.format({
-                pathname: path.join(
-                  __dirname,
-                  '..',
-                  'src',
-                  'frontend',
-                  'websites.html',
-                ),
+                pathname: path.join(__dirname, '..', 'src', 'frontend', 'websites.html'),
                 protocol: 'file:',
                 slashes: true,
                 search: `?status=Needs attention`,
@@ -223,13 +191,7 @@ app.on('ready', () => {
           click: () => {
             mainWindow?.loadURL(
               url.format({
-                pathname: path.join(
-                  __dirname,
-                  '..',
-                  'src',
-                  'frontend',
-                  'websites.html',
-                ),
+                pathname: path.join(__dirname, '..', 'src', 'frontend', 'websites.html'),
                 protocol: 'file:',
                 slashes: true,
                 search: `?status=Requires review`,

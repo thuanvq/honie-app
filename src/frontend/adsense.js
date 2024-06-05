@@ -10,28 +10,15 @@ document.addEventListener('DOMContentLoaded', function () {
     fetch(`http://localhost:3000/adsense/summary?invite=${inviteFilter}`)
       .then((response) => response.json())
       .then((data) => {
-        document.getElementById('total-today').textContent = formatCurrency(
-          data.today,
-        );
-        document.getElementById('total-yesterday').textContent = formatCurrency(
-          data.yesterday,
-        );
-        document.getElementById('total-month').textContent = formatCurrency(
-          data.month,
-        );
-        document.getElementById('total-balance').textContent = formatCurrency(
-          data.balance,
-        );
+        document.getElementById('total-today').textContent = formatCurrency(data.today);
+        document.getElementById('total-yesterday').textContent = formatCurrency(data.yesterday);
+        document.getElementById('total-month').textContent = formatCurrency(data.month);
+        document.getElementById('total-balance').textContent = formatCurrency(data.balance);
       })
       .catch((error) => console.error('Error fetching summary data:', error));
   }
 
-  function fetchData(
-    page = 1,
-    sortBy = 'rpm',
-    order = 'desc',
-    inviteFilter = '',
-  ) {
+  function fetchData(page = 1, sortBy = 'rpm', order = 'desc', inviteFilter = '') {
     fetch(
       `http://localhost:3000/adsense/data?page=${page}&limit=${limit}&sortBy=${sortBy}&order=${order}&invite=${inviteFilter}`,
     )
@@ -48,6 +35,8 @@ document.addEventListener('DOMContentLoaded', function () {
     tbody.innerHTML = '';
     data.forEach((row, index) => {
       const tr = document.createElement('tr');
+      const actionIcon = item.blogs > 0 ? 'assets/stop-icon.svg' : 'assets/stopped-icon.svg';
+      const clickable = item.blogs > 0 ? 'clickable' : '';
       tr.innerHTML = `
         <td>${(currentPage - 1) * 100 + index + 1}</td>
         <td>${row.invite}</td>
@@ -55,6 +44,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <td>${row.country || ''}</td>
         <td style="text-align: right;">${row.utc || ''}</td>
         <td style="text-align: right;">${row.limit || ''}</td>
+        <td class="center-icon"><img src="${actionIcon}" class="action-icon ${clickable}" data-pid="${item.pid}"></td>
         <td style="text-align: right;">${formatNumber(row.blogs) || ''}</td>
         <td>${row.wait || ''}</td>
         <td style="text-align: right;">${formatCurrency(row.rpm)}</td>
@@ -75,9 +65,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('#adsense-table th').forEach((header) => {
       const sortBy = header.getAttribute('data-sort');
       if (sortBy === currentSort.column) {
-        header.innerHTML = `${header.getAttribute(
-          'data-label',
-        )} <span style="font-size: 12px; color: #aaa;">${
+        header.innerHTML = `${header.getAttribute('data-label')} <span style="font-size: 12px; color: #aaa;">${
           currentSort.order === 'asc' ? '▲' : '▼'
         }</span>`;
       } else {
@@ -93,10 +81,7 @@ document.addEventListener('DOMContentLoaded', function () {
   document.querySelectorAll('#adsense-table th').forEach((header) => {
     header.addEventListener('click', () => {
       const sortBy = header.getAttribute('data-sort');
-      const order =
-        currentSort.column === sortBy && currentSort.order === 'desc'
-          ? 'asc'
-          : 'desc';
+      const order = currentSort.column === sortBy && currentSort.order === 'desc' ? 'asc' : 'desc';
       currentSort = { column: sortBy, order: order };
       header.setAttribute('data-order', order);
       currentPage = 1;
@@ -107,12 +92,7 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('prevPageTop').addEventListener('click', () => {
     if (currentPage > 1) {
       currentPage--;
-      fetchData(
-        currentPage,
-        currentSort.column,
-        currentSort.order,
-        inviteFilter,
-      );
+      fetchData(currentPage, currentSort.column, currentSort.order, inviteFilter);
     }
   });
 
@@ -124,12 +104,7 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('prevPageBottom').addEventListener('click', () => {
     if (currentPage > 1) {
       currentPage--;
-      fetchData(
-        currentPage,
-        currentSort.column,
-        currentSort.order,
-        inviteFilter,
-      );
+      fetchData(currentPage, currentSort.column, currentSort.order, inviteFilter);
     }
   });
 
