@@ -30,13 +30,69 @@
       .status-getting-ready {
         background-color: lightgray;
       }
+      .small-title {
+        font-size: 20px;
+        margin-top: 20px;
+        margin-bottom: 10px;
+      }
+      .info-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+      .filter-section {
+        display: flex;
+        align-items: center;
+      }
+      .filter-section input {
+        margin-left: 10px;
+        padding: 5px;
+        font-size: 16px;
+      }
+      .filter-section button {
+        margin-left: 10px;
+        padding: 5px 10px;
+        font-size: 16px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+      }
+      .filter-section button:hover {
+        background-color: #0056b3;
+      }
+      .filter-section .not-found {
+        color: red;
+        margin-left: 10px;
+        font-size: 12px;
+      }
+      .filter-section input.error {
+        border-color: red;
+      }
     </style>
   </head>
   <body>
     <div class="container">
       <h1>Adsense Detail</h1>
+      <div class="info-section">
+        <div>Email: <span id="email"></span> | PID: <span id="pid"></span></div>
+        <div class="filter-section">
+          <label for="filterInput">Filter:</label>
+          <input
+            type="text"
+            id="filterInput"
+            placeholder="Enter Email or PID"
+          />
+          <button id="viewButton">View</button>
+          <span id="notFoundMessage" class="not-found" style="display: none"
+            >Not Found</span
+          >
+        </div>
+      </div>
 
-      <h2>Sites</h2>
+      <h2 class="small-title">Sites</h2>
       <table id="sites-table">
         <thead>
           <tr>
@@ -48,7 +104,7 @@
         <tbody></tbody>
       </table>
 
-      <h2>Report</h2>
+      <h2 class="small-title">Report</h2>
       <table id="report-table">
         <thead>
           <tr>

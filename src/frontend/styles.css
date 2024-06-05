@@ -44,10 +44,37 @@ tbody tr:nth-child(even) {
   background-color: #f9f9f9;
 }
 
+.top-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.filter-section {
+  display: flex;
+  align-items: center;
+}
+
+.filter-section input {
+  margin-left: 10px;
+  padding: 5px;
+  font-size: 16px;
+}
+
+.summary-section {
+  display: flex;
+  justify-content: space-around;
+  flex-grow: 1;
+  max-width: 800px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
 .pagination {
   display: flex;
   justify-content: space-between;
-  margin-top: 20px;
+  margin: 20px 0;
 }
 
 button {
@@ -56,8 +83,13 @@ button {
   background-color: #007bff;
   border: none;
   cursor: pointer;
+  border-radius: 5px;
 }
 
 button:disabled {
   background-color: #cccccc;
+}
+
+button:hover:not(:disabled) {
+  background-color: #0056b3;
 }

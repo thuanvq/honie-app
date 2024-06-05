@@ -2,26 +2,38 @@ const { shell } = require('electron');
 
 document.addEventListener('DOMContentLoaded', function () {
   const params = new URLSearchParams(window.location.search);
-  const pid = params.get('pid');
+  let pid = params.get('pid');
 
   function fetchDetail(pid) {
     fetch(`http://localhost:3000/adsense/detail?pid=${pid}`)
       .then((response) => response.json())
       .then((data) => {
-        populateSitesTable(data.sites || []);
-        populateReportTable(
-          data.report || [],
-          data.monthReport || {},
-          data.todayReport || {},
-        );
-        const detailElement = document.getElementById('adsense-detail');
-        detailElement.innerHTML = syntaxHighlight(
-          JSON.stringify(data, null, 2),
-          data.email,
-          data.pid,
-        );
+        if (Object.keys(data).length === 0) {
+          showNotFound();
+        } else {
+          document.getElementById('email').textContent = data.email || '';
+          document.getElementById('pid').textContent = data.pid || '';
+          hideNotFound();
+
+          populateSitesTable(data.sites || []);
+          populateReportTable(
+            data.report || [],
+            data.monthReport || {},
+            data.todayReport || {},
+          );
+
+          const detailElement = document.getElementById('adsense-detail');
+          detailElement.innerHTML = syntaxHighlight(
+            JSON.stringify(data, null, 2),
+            data.email,
+            data.pid,
+          );
+        }
       })
-      .catch((error) => console.error('Error fetching adsense detail:', error));
+      .catch((error) => {
+        console.error('Error fetching adsense detail:', error);
+        showNotFound();
+      });
   }
 
   function populateSitesTable(sites) {
@@ -139,6 +151,42 @@ document.addEventListener('DOMContentLoaded', function () {
       },
     );
   }
+
+  function handleFilterInput() {
+    pid = document.getElementById('filterInput').value.trim();
+    if (pid) {
+      fetchDetail(pid);
+    }
+  }
+
+  function showNotFound() {
+    const filterInput = document.getElementById('filterInput');
+    const notFoundMessage = document.getElementById('notFoundMessage');
+    filterInput.classList.add('error');
+    notFoundMessage.style.display = 'inline';
+  }
+
+  function hideNotFound() {
+    const filterInput = document.getElementById('filterInput');
+    const notFoundMessage = document.getElementById('notFoundMessage');
+    filterInput.classList.remove('error');
+    notFoundMessage.style.display = 'none';
+  }
+
+  document
+    .getElementById('filterInput')
+    .addEventListener('input', hideNotFound);
+  document
+    .getElementById('filterInput')
+    .addEventListener('keypress', function (event) {
+      if (event.key === 'Enter') {
+        handleFilterInput();
+      }
+    });
+
+  document
+    .getElementById('viewButton')
+    .addEventListener('click', handleFilterInput);
 
   fetchDetail(pid);
 });

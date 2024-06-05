@@ -6,7 +6,7 @@ async function bootstrap() {
 
   // Enable CORS
   app.enableCors();
-
+  // app.useGlobalInterceptors(new LoggingInterceptor());
   await app.listen(3000);
 }
 bootstrap();

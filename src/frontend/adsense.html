@@ -9,15 +9,17 @@
   <body>
     <div class="container">
       <h1>Adsense Data</h1>
-      <div class="filter-container">
-        <label for="inviteFilter">Invite Filter:</label>
-        <input type="text" id="inviteFilter" placeholder="Email Filter" />
-      </div>
-      <div id="summary">
-        <div>Today: <span id="total-today"></span></div>
-        <div>Yesterday: <span id="total-yesterday"></span></div>
-        <div>Month: <span id="total-month"></span></div>
-        <div>Balance: <span id="total-balance"></span></div>
+      <div class="top-section">
+        <div class="filter-section">
+          <label for="inviteFilter">Invite Filter:</label>
+          <input type="text" id="inviteFilter" placeholder="Email Filter" />
+        </div>
+        <div id="summary" class="summary-section">
+          <div>Today: <span id="total-today"></span></div>
+          <div>Yesterday: <span id="total-yesterday"></span></div>
+          <div>Month: <span id="total-month"></span></div>
+          <div>Balance: <span id="total-balance"></span></div>
+        </div>
       </div>
       <div class="pagination" id="paginationTop">
         <button id="prevPageTop">Previous</button>

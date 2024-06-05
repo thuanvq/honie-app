@@ -1,6 +1,7 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { MongoClient, Db, Collection, Document } from 'mongodb';
+import { logDate } from '@src/utils';
 import * as dotenv from 'dotenv';
+import { Collection, Db, Document, MongoClient } from 'mongodb';
 
 dotenv.config();
 
@@ -30,6 +31,13 @@ export class MongodbService implements OnModuleInit {
     skip?: number,
     limit?: number,
   ): Promise<any[]> {
+    console.log(
+      `${logDate()} [Mongo] fetchData ${collectionName}`,
+      JSON.stringify(condition),
+      JSON.stringify(sort),
+      skip,
+      limit,
+    );
     const collection = this.getCollection<Document>(collectionName);
     return collection
       .find(condition, { projection })
@@ -71,6 +79,10 @@ export class MongodbService implements OnModuleInit {
     project?: any;
   }) {
     const { collectionName, match, group, sort, project } = input;
+    console.log(
+      `${logDate()} [Mongo] aggregate ${collectionName}`,
+      JSON.stringify(match),
+    );
     const aggregateArray: any[] = [{ $group: group }];
     if (match) aggregateArray.unshift({ $match: match });
     if (sort) aggregateArray.push({ $sort: sort });

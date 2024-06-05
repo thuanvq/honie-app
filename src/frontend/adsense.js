@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', function () {
   let currentPage = 1;
   const limit = 100;
   let currentSort = { column: 'rpm', order: 'desc' };
+  let inviteFilter = '';
 
   function fetchSummary(inviteFilter = '') {
     fetch(`http://localhost:3000/adsense/summary?invite=${inviteFilter}`)
@@ -99,46 +100,67 @@ document.addEventListener('DOMContentLoaded', function () {
       currentSort = { column: sortBy, order: order };
       header.setAttribute('data-order', order);
       currentPage = 1;
-      fetchData(currentPage, sortBy, order);
+      fetchData(currentPage, sortBy, order, inviteFilter);
     });
   });
 
   document.getElementById('prevPageTop').addEventListener('click', () => {
     if (currentPage > 1) {
       currentPage--;
-      fetchData(currentPage, currentSort.column, currentSort.order);
+      fetchData(
+        currentPage,
+        currentSort.column,
+        currentSort.order,
+        inviteFilter,
+      );
     }
   });
 
   document.getElementById('nextPageTop').addEventListener('click', () => {
     currentPage++;
-    fetchData(currentPage, currentSort.column, currentSort.order);
+    fetchData(currentPage, currentSort.column, currentSort.order, inviteFilter);
   });
 
   document.getElementById('prevPageBottom').addEventListener('click', () => {
     if (currentPage > 1) {
       currentPage--;
-      fetchData(currentPage, currentSort.column, currentSort.order);
+      fetchData(
+        currentPage,
+        currentSort.column,
+        currentSort.order,
+        inviteFilter,
+      );
     }
   });
 
   document.getElementById('nextPageBottom').addEventListener('click', () => {
     currentPage++;
-    fetchData(currentPage, currentSort.column, currentSort.order);
+    fetchData(currentPage, currentSort.column, currentSort.order, inviteFilter);
   });
 
-  setTimeout(() => {
-    fetchData();
-    fetchSummary();
-  }, 2000);
+  fetchData();
+  fetchSummary();
+
+  function debounce(func, wait) {
+    let timeout;
+    return function (...args) {
+      const context = this;
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func.apply(context, args), wait);
+    };
+  }
 
   const inviteFilterInput = document.getElementById('inviteFilter');
 
-  inviteFilterInput.addEventListener('keyup', () => {
-    const inviteFilter = inviteFilterInput.value.trim();
+  function handleInput() {
+    inviteFilter = inviteFilterInput.value.trim();
     fetchData(currentPage, currentSort.column, currentSort.order, inviteFilter);
     fetchSummary(inviteFilter);
-  });
+  }
+
+  const debouncedHandleInput = debounce(handleInput, 300); // 1000ms = 1 second
+
+  inviteFilterInput.addEventListener('keyup', debouncedHandleInput);
 });
 
 function formatCurrency(value) {

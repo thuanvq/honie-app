@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MongodbModule } from './mongodb/mongodb.module';
@@ -9,6 +9,7 @@ import { AdsenseController } from './adsense/adsense.controller';
 import { AdsenseModule } from './adsense/adsense.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { LoggingMiddleware } from './logging.middleware';
+import { LoggingInterceptor } from './logging.interceptor';
 
 @Module({
   imports: [AdsenseModule],
@@ -16,7 +17,16 @@ import { LoggingMiddleware } from './logging.middleware';
   providers: [
     MongodbService,
     ViewerService,
-    { provide: APP_INTERCEPTOR, useClass: LoggingMiddleware },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: LoggingInterceptor,
+    },
   ],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer;
+    // .apply(LoggingMiddleware)
+    // .forRoutes('*');
+  }
+}
