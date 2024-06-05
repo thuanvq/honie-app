@@ -35,8 +35,8 @@ document.addEventListener('DOMContentLoaded', function () {
     tbody.innerHTML = '';
     data.forEach((row, index) => {
       const tr = document.createElement('tr');
-      const actionIcon = item.blogs > 0 ? 'assets/stop-icon.svg' : 'assets/stopped-icon.svg';
-      const clickable = item.blogs > 0 ? 'clickable' : '';
+      const actionIcon = row.blogs && row.blogs > 0 ? '../assets/stop-icon.svg' : '../assets/stopped-icon.svg';
+      const clickable = row.blogs && row.blogs > 0 ? 'clickable' : '';
       tr.innerHTML = `
         <td>${(currentPage - 1) * 100 + index + 1}</td>
         <td>${row.invite}</td>
@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <td>${row.country || ''}</td>
         <td style="text-align: right;">${row.utc || ''}</td>
         <td style="text-align: right;">${row.limit || ''}</td>
-        <td class="center-icon"><img src="${actionIcon}" class="action-icon ${clickable}" data-pid="${item.pid}"></td>
+        <td class="center-icon"><img src="${actionIcon}" class="action-icon ${clickable}" data-pid="${row.pid}"></td>
         <td style="text-align: right;">${formatNumber(row.blogs) || ''}</td>
         <td>${row.wait || ''}</td>
         <td style="text-align: right;">${formatCurrency(row.rpm)}</td>

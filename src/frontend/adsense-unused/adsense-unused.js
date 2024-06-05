@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       tableBody.innerHTML = ''; // Clear previous content
 
       data.forEach((item, index) => {
-        const actionIcon = item.done ? 'assets/done-icon.svg' : 'assets/run-icon.svg';
+        const actionIcon = item.done ? '../assets/done-icon.svg' : '../assets/run-icon.svg';
         const clickable = item.done ? '' : 'clickable';
 
         const tr = document.createElement('tr');
@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', async () => {
               method: 'POST',
             });
             if (response.status === 201) {
-              event.target.src = 'assets/done-icon.svg';
+              event.target.src = '../assets/done-icon.svg';
               event.target.classList.remove('run-icon', 'clickable');
               event.target.classList.add('done-icon');
             }
