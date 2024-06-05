@@ -7,14 +7,12 @@
     <link rel="stylesheet" href="./common/list.css" />
   </head>
   <body>
-    <h1 id="list-title"></h1>
+    <div class="header-container">
+      <h1 id="list-title" class="title"></h1>
+      <div id="summary-text" class="summary-text"></div>
+    </div>
     <div class="filter-pagination-section">
-      <div class="filter-section">
-        <label for="emailFilter">Filter by Email:</label>
-        <input type="text" id="emailFilter" placeholder="Enter email" />
-        <label for="runningFilter">Filter by Running:</label>
-        <input type="checkbox" id="runningFilter" />
-      </div>
+      <div class="filter-section"></div>
       <div class="pagination-section">
         <span id="total-records">Total Records: 0</span>
         <button id="prevPageTop">Previous</button>
@@ -29,10 +27,10 @@
       </thead>
       <tbody></tbody>
     </table>
-    <div class="bottom-pagination-section">
+    <div class="pagination-section">
       <button id="prevPageBottom">Previous</button>
       <button id="nextPageBottom">Next</button>
     </div>
-    <script src="./common/list.js"></script>
+    <script src="list.js"></script>
   </body>
 </html>

@@ -231,25 +231,38 @@ export class AdsenseService {
         { sites: { $elemMatch: { name: new RegExp(anything, 'i'), status: 'Ready' } } },
       ];
 
-    let data = await this.mongodbService.fetchData(
-      'google_adsense',
-      where,
-      {
-        email: 1,
-        pid: 1,
-        balance: 1,
-        todayReport: 1,
-        monthReport: 1,
-        yesterdayReport: 1,
-        information: 1,
-        sites: 1,
-        blogCount: 1,
-        needBlog: 1,
-      },
-      { [SORT_FIELDS[sortBy] || sortBy || 'email']: order === 'asc' ? 1 : -1 },
-      (Number(page) - 1) * Number(limit),
-      Number(limit),
-    );
+    let [data, total] = await Promise.all([
+      this.mongodbService.fetchData(
+        'google_adsense',
+        where,
+        {
+          email: 1,
+          pid: 1,
+          balance: 1,
+          todayReport: 1,
+          monthReport: 1,
+          yesterdayReport: 1,
+          information: 1,
+          sites: 1,
+          blogCount: 1,
+          needBlog: 1,
+        },
+        { [SORT_FIELDS[sortBy] || sortBy || 'email']: order === 'asc' ? 1 : -1 },
+        (Number(page) - 1) * Number(limit),
+        Number(limit),
+      ),
+      this.mongodbService.aggregate({
+        collectionName: 'google_adsense',
+        match: where,
+        group: {
+          _id: '',
+          today: { $sum: '$todayReport.estimatedEarnings' },
+          yesterday: { $sum: '$yesterdayReport.estimatedEarnings' },
+          month: { $sum: '$monthReport.estimatedEarnings' },
+          count: { $sum: 1 },
+        },
+      }),
+    ]);
 
     data = data.map((data) => {
       const sites = data.sites
@@ -283,9 +296,10 @@ export class AdsenseService {
       { label: 'Balance', key: 'balance', sortable: true, type: 'currency' },
       { label: 'Sites', key: 'sites', sortable: false },
     ];
-    const totalRecords = 450;
+    const totalRecords = total[0].count;
+    const summary = `today: ${total[0].today} $, yesterday: ${total[0].yesterday} $, month: ${total[0].month} $`;
     const filters = [{ key: 'anything', label: 'Anything', type: 'text' }];
-    return { title: 'Adsense Wordpress', headers, filters, data, totalRecords };
+    return { title: 'Adsense Wordpress', headers, filters, data, totalRecords, summary };
   }
 
   async runAdsenseWordpress(pid: string) {

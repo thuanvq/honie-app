@@ -9,7 +9,14 @@ export const COUNTRY_CODE: Record<string, string> = {
   Vietnam: 'VN',
 };
 
-export type LIST_RESPONSE = { title: string; headers: any[]; data: any[]; filters: any[]; totalRecords: number };
+export type LIST_RESPONSE = {
+  title: string;
+  headers: any[];
+  data: any[];
+  filters: any[];
+  totalRecords: number;
+  summary: string;
+};
 
 export const SORT_FIELDS = {
   today: 'todayReport.estimatedEarnings',

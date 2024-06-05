@@ -15,6 +15,7 @@ if (typeof CommonListComponent === 'undefined') {
         this.tableHeaders = document.getElementById('table-headers');
         this.tableBody = document.querySelector('#common-table tbody');
         this.totalRecords = document.getElementById('total-records');
+        this.summaryText = document.getElementById('summary-text'); // Add this line
 
         this.fetchAndRenderData();
       } catch (error) {
@@ -71,11 +72,12 @@ if (typeof CommonListComponent === 'undefined') {
 
       try {
         const response = await fetch(`${this.config.apiEndpoint}?${query.toString()}`);
-        const { headers, data, filters, title, totalRecords } = await response.json();
+        const { headers, data, filters, title, totalRecords, summary } = await response.json();
         if (!init) {
           document.title = title;
           document.getElementById('list-title').innerText = title;
           this.totalRecords.innerText = `Total Records: ${totalRecords}`;
+          this.summaryText.innerText = summary; // Add this line
           this.populateFilters(filters);
           this.populateHeaders(headers);
           this.totalRecords.innerText = `Total Records: ${totalRecords}`;
