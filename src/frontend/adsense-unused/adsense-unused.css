@@ -79,7 +79,7 @@ a:hover {
 }
 
 .center-icon {
-  display: flex;
+  text-align: center;
   justify-content: center;
   align-items: center;
 }
