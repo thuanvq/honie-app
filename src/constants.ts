@@ -18,13 +18,13 @@ export type LIST_RESPONSE = {
   summary: string;
 };
 
-export const SORT_FIELDS = {
+export const ADSENSE_SORT = {
   today: 'todayReport.estimatedEarnings',
   rpm: 'todayReport.pageRPM',
   views: 'todayReport.pageViews',
   impressions: 'todayReport.impressions',
-  updated: 'todayReport.updatedAt',
   clicks: 'todayReport.clicks',
+  updated: 'todayReport.updatedAt',
   yesterday: 'yesterdayReport.estimatedEarnings',
   month: 'monthReport.estimatedEarnings',
   limit: 'information.limit',
@@ -33,3 +33,5 @@ export const SORT_FIELDS = {
   owner: 'information.owner',
   currency: 'information.currency',
 };
+export const READY_PANTIP = { sites: { $elemMatch: { name: /pantip.com/, status: 'Ready' } } };
+export const READY_WORDPRESS = { sites: { $elemMatch: { name: { $not: /pantip.com|minigame.vip|html5gameportal.com/ }, status: 'Ready' } } };

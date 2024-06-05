@@ -1,401 +1,104 @@
 // adsense.service.ts
 
 import { Injectable } from '@nestjs/common';
-import { COUNTRY_CODE, LIST_RESPONSE, SORT_FIELDS } from '@src/constants';
-import { MongodbService } from '../mongodb/mongodb.service';
+import { ADSENSE_SORT, COUNTRY_CODE, LIST_RESPONSE, READY_PANTIP, READY_WORDPRESS } from '@src/constants';
+import { Collection } from 'mongodb';
+import { MongoDBService } from '../mongodb/mongodb.service';
 
 @Injectable()
 export class AdsenseService {
-  constructor(private readonly mongodbService: MongodbService) {}
-
-  async x(
-    page: string = '1',
-    limit: string = '100',
-    sortBy: string = 'rpm',
-    order: string = 'desc',
-    invite: string,
-  ): Promise<any[]> {
-    const SORT_FIELDS = {
-      rpm: 'todayReport.pageRPM',
-      views: 'todayReport.pageViews',
-      impressions: 'todayReport.impressions',
-      updated: 'todayReport.updatedAt',
-      clicks: 'todayReport.clicks',
-      invite: 'email',
-    };
-
-    const where: Record<string, any> = {
-      'sites.status': 'Ready',
-      deletedAt: null,
-      error: null,
-    };
-    if (invite) where.email = new RegExp(invite, 'i');
-    const data = await this.mongodbService.fetchData(
-      'google_adsense',
-      where,
-      {
-        today: 1,
-        yesterday: 1,
-        month: 1,
-        balance: 1,
-        todayReport: 1,
-        limit: 1,
-        country: 1,
-        email: 1,
-        pid: 1,
-        utc: 1,
-        blogCount: 1,
-        needBlog: 1,
-      },
-      { [SORT_FIELDS[sortBy] || sortBy]: order === 'asc' ? 1 : -1 },
-      (Number(page) - 1) * Number(limit),
-      Number(limit),
-    );
-
-    return data.map((d) => {
-      return {
-        invite: d.email?.replace('@minori.com.vn', ''),
-        pid: d.pid,
-        country: COUNTRY_CODE[d.country] || d.country,
-        utc: d.utc,
-        limit: d.limit?.replace(' 2024', ''),
-        blogs: d.blogCount || '',
-        wait: d.needBlog || '',
-        rpm: d.todayReport?.pageRPM,
-        views: d.todayReport?.pageViews,
-        impressions: d.todayReport?.impressions,
-        clicks: d.todayReport?.clicks,
-        today: d.today,
-        yesterday: d.yesterday,
-        month: d.month,
-        balance: d.balance,
-        updated: d.todayReport?.updatedAt,
-      };
-    });
+  private gaCollection: Collection;
+  private blogCollection: Collection;
+  constructor(private readonly mongodbService: MongoDBService) {
+    this.gaCollection = this.mongodbService.getCollection('google_adsense');
+    this.blogCollection = this.mongodbService.getCollection('sites_blog');
   }
 
-  async getAdsenseSummary(invite: string): Promise<any> {
-    const where: Record<string, any> = {
-      'sites.status': 'Ready',
-      deletedAt: null,
-      error: null,
-    };
-    if (invite) where.email = new RegExp(invite, 'i');
-    const result = await this.mongodbService.aggregate({
-      collectionName: 'google_adsense',
-      match: where,
-      group: {
-        _id: '',
-        today: { $sum: '$today' },
-        yesterday: { $sum: '$yesterday' },
-        month: { $sum: '$month' },
-        balance: { $sum: '$balance' },
-      },
-    });
-
-    return result[0];
-  }
-
-  async getAdsenseDetail(pid: string): Promise<any> {
-    return this.mongodbService.findOne('google_adsense', {
-      $or: [{ pid: new RegExp(pid, 'i') }, { email: new RegExp(pid, 'i') }],
-    });
-  }
-
-  async getErrorAdsenseData() {
-    const adsenseData = await this.mongodbService.fetchData(
-      'google_adsense',
-      { error: { $exists: true } },
-      { email: 1, pid: 1, error: 1, month: 1, balance: 1, sites: 1 },
-      { email: 1 },
-      0,
-      100,
-    );
-    return adsenseData.map((data) => ({
-      email: data.email,
-      pid: data.pid,
-      error: data.error,
-      month: data.month,
-      balance: data.balance,
-      sites: data.sites
-        .filter((site) => site.status === 'Ready')
-        .map((site) => site.name)
-        .join(','),
-    }));
-  }
-
-  async getWebsites(status: string, wordpress: string, name: string) {
-    const adsenseData = await this.mongodbService.fetchData(
-      'google_adsense',
-      { error: null, 'sites.status': status },
-      { email: 1, pid: 1, sites: 1, fetchedAt: 1 },
-      { email: -1 },
-      0,
-      1000,
-    );
-    const result = [];
-    adsenseData.forEach((data) => {
-      data.sites.forEach((site) => {
-        if (
-          site.status === status &&
-          (!wordpress || !/html5gameportal.com|minigame.vip|pantip.com/.test(site.name)) &&
-          (!name || new RegExp(name).test(site.name))
-        ) {
-          result.push({
-            email: data.email,
-            pid: data.pid,
-            fetchedAt: data.fetchedAt,
-            name: site.name,
-          });
-        }
-      });
-    });
-    return result;
-  }
-
-  async getUnused(email: string, site: string) {
-    const where: Record<string, any> = {
-      blogCount: { $not: { $gt: 0 } },
-      'sites.status': 'Ready',
-      deletedAt: null,
-      error: null,
-    };
-    if (email) where.email = new RegExp(email, 'i');
-    if (site) where.sites = { $elemMatch: { name: new RegExp(site, 'i'), status: 'Ready' } };
-
-    const adsenseData = await this.mongodbService.fetchData(
-      'google_adsense',
-      where,
-      {
-        today: 1,
-        yesterday: 1,
-        month: 1,
-        balance: 1,
-        todayReport: 1,
-        limit: 1,
-        country: 1,
-        email: 1,
-        pid: 1,
-        utc: 1,
-        blogCount: 1,
-        needBlog: 1,
-        sites: 1,
-      },
-      { email: -1 },
-      0,
-      1000,
-    );
-
-    return adsenseData.map((data) => {
-      const sites = data.sites
-        .filter((s) => s.status === 'Ready')
-        .map((s) => s.name)
-        .join(',');
-      return {
-        email: data.email,
-        pid: data.pid,
-        limit: data.limit,
-        rpm: data.todayReport?.pageRPM,
-        views: data.todayReport?.pageViews,
-        today: data.today,
-        yesterday: data.yesterday,
-        month: data.month,
-        balance: data.balance,
-        sites: sites,
-        done: !!data.needBlog,
-      };
-    });
-  }
-
-  async runAdsense(pid: string) {
-    await this.mongodbService.updateOne('google_adsense', { pid }, { $inc: { needBlog: 1 } }, {});
+  async addBlogspot(pid: string) {
+    await this.gaCollection.updateOne({ pid }, { $inc: { needBlog: 1 } });
     return true;
   }
 
-  async getAdsenseWordpress(
-    page: string = '1',
-    limit: string = '100',
-    sortBy: string = 'email',
-    order: string = 'desc',
-    anything: string,
-  ): Promise<LIST_RESPONSE> {
-    const where: Record<string, any> = {
-      sites: { $elemMatch: { name: { $not: /pantip.com|minigame.vip|html5gameportal.com/ }, status: 'Ready' } },
-      deletedAt: null,
-      error: null,
-    };
+  async stopBlogspot(pid: string) {
+    await Promise.all([
+      this.gaCollection.updateOne({ pid }, { $inc: { blogCount: -1 } }),
+      this.blogCollection.updateOne({ pantip: true, pid }, { $set: { pantip: false, pid: 'TEMP' } }),
+    ]);
+    return true;
+  }
+
+  async getAdsenseDetail(input: string): Promise<any> {
+    return this.gaCollection.findOne({ $or: [{ pid: new RegExp(input, 'i') }, { email: new RegExp(input, 'i') }] });
+  }
+
+  async getAdsenseError(page: string, limit: string, sortBy: string, order: string, anything: string): Promise<LIST_RESPONSE> {
+    const where: Record<string, any> = { error: { $ne: null }, deletedAt: null };
     if (anything) where.$or = [{ email: new RegExp(anything, 'i') }, { pid: new RegExp(anything, 'i') }];
 
     let [data, total] = await Promise.all([
-      this.mongodbService.fetchData(
-        'google_adsense',
-        where,
-        {
-          email: 1,
-          pid: 1,
-          balance: 1,
-          todayReport: 1,
-          monthReport: 1,
-          yesterdayReport: 1,
-          information: 1,
-          sites: 1,
-          blogCount: 1,
-          needBlog: 1,
-        },
-        { [SORT_FIELDS[sortBy] || sortBy || 'email']: order === 'asc' ? 1 : -1 },
-        (Number(page) - 1) * Number(limit),
-        Number(limit),
-      ),
-      this.mongodbService.aggregate({
-        collectionName: 'google_adsense',
-        match: where,
-        group: {
-          _id: '',
-          today: { $sum: '$todayReport.estimatedEarnings' },
-          yesterday: { $sum: '$yesterdayReport.estimatedEarnings' },
-          month: { $sum: '$monthReport.estimatedEarnings' },
-          count: { $sum: 1 },
-        },
-      }),
+      this.getAdsenseList(where, Number(limit), (Number(page) - 1) * Number(limit), sortBy, order),
+      this.summaryAdsense(where),
     ]);
 
-    data = data.map((data) => {
-      const sites = data.sites
-        .filter((s) => s.status === 'Ready')
-        .map((s) => s.name)
-        .join(',');
-      return {
-        email: data.email,
-        pid: data.pid,
-        limit: data.information?.limit?.replace(' 2024', ''),
-        rpm: data.todayReport?.pageRPM,
-        views: data.todayReport?.pageViews,
-        today: data.todayReport?.estimatedEarnings,
-        yesterday: data.yesterdayReport?.estimatedEarnings,
-        month: data.monthReport?.estimatedEarnings,
-        balance: data.balance,
-        sites: sites,
-        action: data.needBlog ? 'done' : 'run',
-      };
-    });
     const headers = [
       { label: 'Email', key: 'email', sortable: true },
       { label: 'PID', key: 'pid', sortable: true, link: true },
       { label: 'Limit', key: 'limit', sortable: true, type: 'center' },
+      { label: 'Country', key: 'country', sortable: true, type: 'center' },
+      { label: 'Blogs', key: 'blogCount', sortable: true, type: 'number' },
+      { label: 'Month', key: 'month', sortable: true, type: 'currency' },
+      { label: 'Balance', key: 'balance', sortable: true, type: 'currency' },
+      { label: 'Sites', key: 'sites', sortable: false },
+      { label: 'Error', key: 'error', sortable: false, type: 'center' },
+    ];
+    const totalRecords = total?.count;
+    const filters = [{ key: 'anything', label: 'Anything', type: 'text' }];
+    return { title: 'Adsense Ready', headers, filters, data, totalRecords, summary: '' };
+  }
+
+  async getAdsenseUnused(page: string, limit: string, sortBy: string, order: string, anything: string): Promise<LIST_RESPONSE> {
+    const where: Record<string, any> = { blogCount: { $not: { $gt: 0 } }, 'sites.status': 'Ready', deletedAt: null, error: null };
+    if (anything)
+      where.$or = [
+        { email: new RegExp(anything, 'i') },
+        { pid: new RegExp(anything, 'i') },
+        { sites: { $elemMatch: { name: new RegExp(anything, 'i'), status: 'Ready' } } },
+      ];
+
+    let [data, total] = await Promise.all([
+      this.getAdsenseList(where, Number(limit), (Number(page) - 1) * Number(limit), sortBy, order),
+      this.summaryAdsense(where),
+    ]);
+
+    const headers = [
+      { label: 'Email', key: 'email', sortable: true },
+      { label: 'PID', key: 'pid', sortable: true, link: true },
+      { label: 'Limit', key: 'limit', sortable: true, type: 'center' },
+      { label: 'Country', key: 'country', sortable: true, type: 'center' },
       { label: 'Action', key: 'action', type: 'on', sortable: false },
+      { label: 'Blogs', key: 'blogCount', sortable: true, type: 'number' },
       { label: 'RPM', key: 'rpm', sortable: true, type: 'currency' },
       { label: 'Views', key: 'views', sortable: true, type: 'number' },
+      { label: 'Clicks', key: 'clicks', sortable: true, type: 'number' },
       { label: 'Today', key: 'today', sortable: true, type: 'currency' },
-      { label: 'Yesterday', key: 'yesterday', sortable: true, type: 'currency' },
       { label: 'Month', key: 'month', sortable: true, type: 'currency' },
       { label: 'Balance', key: 'balance', sortable: true, type: 'currency' },
       { label: 'Sites', key: 'sites', sortable: false },
     ];
-    const totalRecords = total[0].count;
-    const summary = `today: ${total[0].today} $, yesterday: ${total[0].yesterday} $, month: ${total[0].month} $`;
+    const totalRecords = total?.count;
     const filters = [{ key: 'anything', label: 'Anything', type: 'text' }];
-    return { title: 'Adsense Wordpress', headers, filters, data, totalRecords, summary };
+    return { title: 'Adsense Ready', headers, filters, data, totalRecords, summary: '' };
   }
 
-  async runAdsenseWordpress(pid: string) {
-    console.log('runAdsenseWordpress');
-    return true;
-  }
-
-  async getAdsenseUsing(
-    page: string = '1',
-    limit: string = '100',
-    sortBy: string = 'rpm',
-    order: string = 'desc',
-    anything: string,
-  ): Promise<LIST_RESPONSE> {
-    const where: Record<string, any> = { 'sites.status': 'Ready', deletedAt: null, error: null };
-    return this.getAdsenseList(page, limit, sortBy, order, anything, where);
-  }
-
-  async getAdsensePantip(
-    page: string = '1',
-    limit: string = '100',
-    sortBy: string = 'rpm',
-    order: string = 'desc',
-    anything: string,
-  ): Promise<LIST_RESPONSE> {
-    const where: Record<string, any> = {
-      sites: { $elemMatch: { name: /pantip.com/, status: 'Ready' } },
-      deletedAt: null,
-      error: null,
-    };
-    return this.getAdsenseList(page, limit, sortBy, order, anything, where);
-  }
-
-  async getAdsenseList(
-    page: string = '1',
-    limit: string = '100',
-    sortBy: string = 'rpm',
-    order: string = 'desc',
-    anything: string,
-    where: Record<string, any>,
-  ): Promise<LIST_RESPONSE> {
+  async getAdsenseWordpress(page: string, limit: string, sortBy: string, order: string, anything: string): Promise<LIST_RESPONSE> {
+    const where: Record<string, any> = { ...READY_WORDPRESS, deletedAt: null, error: null };
     if (anything) where.$or = [{ email: new RegExp(anything, 'i') }, { pid: new RegExp(anything, 'i') }];
 
     let [data, total] = await Promise.all([
-      this.mongodbService.fetchData(
-        'google_adsense',
-        where,
-        {
-          email: 1,
-          pid: 1,
-          balance: 1,
-          todayReport: 1,
-          monthReport: 1,
-          yesterdayReport: 1,
-          information: 1,
-          sites: 1,
-          blogCount: 1,
-          needBlog: 1,
-        },
-        { [SORT_FIELDS[sortBy || 'rpm'] || sortBy]: order === 'asc' ? 1 : -1 },
-        (Number(page) - 1) * Number(limit),
-        Number(limit),
-      ),
-      this.mongodbService.aggregate({
-        collectionName: 'google_adsense',
-        match: where,
-        group: {
-          _id: '',
-          today: { $sum: '$todayReport.estimatedEarnings' },
-          yesterday: { $sum: '$yesterdayReport.estimatedEarnings' },
-          month: { $sum: '$monthReport.estimatedEarnings' },
-          count: { $sum: 1 },
-        },
-      }),
+      this.getAdsenseList(where, Number(limit), (Number(page) - 1) * Number(limit), sortBy, order),
+      this.summaryAdsense(where),
     ]);
 
-    data = data.map((data) => {
-      const sites = data.sites
-        .filter((s) => s.status === 'Ready')
-        .map((s) => s.name)
-        .join(',');
-      return {
-        email: data.email,
-        pid: data.pid,
-        limit: data.information?.limit?.replace(' 2024', ''),
-        country: COUNTRY_CODE[data.information.country],
-        utc: data.information.utc,
-        blogs: data.blogCount,
-        rpm: data.todayReport?.pageRPM,
-        views: data.todayReport?.pageViews,
-        impressions: data.todayReport?.impressions,
-        clicks: data.todayReport?.clicks,
-        today: data.todayReport?.estimatedEarnings,
-        updated: data.todayReport?.updatedAt,
-        yesterday: data.yesterdayReport?.estimatedEarnings,
-        month: data.monthReport?.estimatedEarnings,
-        balance: data.balance,
-        sites: sites,
-        action: data.blogCount ? 'run' : '',
-      };
-    });
     const headers = [
       { label: 'Email', key: 'email', sortable: true },
       { label: 'PID', key: 'pid', sortable: true, link: true },
@@ -403,7 +106,7 @@ export class AdsenseService {
       { label: 'Country', key: 'country', sortable: true, type: 'center' },
       { label: 'UTC', key: 'utc', sortable: true, type: 'number' },
       { label: 'Action', key: 'action', type: 'off', sortable: false },
-      { label: 'Blogs', key: 'blogs', sortable: true, type: 'number' },
+      { label: 'Blogs', key: 'blogCount', sortable: true, type: 'number' },
       { label: 'RPM', key: 'rpm', sortable: true, type: 'currency' },
       { label: 'Views', key: 'views', sortable: true, type: 'number' },
       { label: 'Clicks', key: 'clicks', sortable: true, type: 'number' },
@@ -413,9 +116,158 @@ export class AdsenseService {
       { label: 'Balance', key: 'balance', sortable: true, type: 'currency' },
       { label: 'Updated', key: 'updated', sortable: false, type: 'center' },
     ];
-    const totalRecords = total[0].count;
-    const summary = `today: ${total[0].today} $, yesterday: ${total[0].yesterday} $, month: ${total[0].month} $`;
+    const totalRecords = total?.count;
+    const summary = `today: ${total.today} $, yesterday: ${total.yesterday} $, month: ${total.month} $`;
     const filters = [{ key: 'anything', label: 'Anything', type: 'text' }];
     return { title: 'Adsense Ready', headers, filters, data, totalRecords, summary };
+  }
+
+  async getAdsenseUsing(page: string, limit: string, sortBy: string = 'rpm', order: string, anything: string): Promise<LIST_RESPONSE> {
+    const where: Record<string, any> = { 'sites.status': 'Ready', deletedAt: null, error: null };
+    if (anything) where.$or = [{ email: new RegExp(anything, 'i') }, { pid: new RegExp(anything, 'i') }];
+
+    let [data, total] = await Promise.all([
+      this.getAdsenseList(where, Number(limit), (Number(page) - 1) * Number(limit), sortBy, order),
+      this.summaryAdsense(where),
+    ]);
+
+    const headers = [
+      { label: 'Email', key: 'email', sortable: true },
+      { label: 'PID', key: 'pid', sortable: true, link: true },
+      { label: 'Limit', key: 'limit', sortable: true, type: 'center' },
+      { label: 'Country', key: 'country', sortable: true, type: 'center' },
+      { label: 'UTC', key: 'utc', sortable: true, type: 'number' },
+      { label: 'Action', key: 'action', type: 'off', sortable: false },
+      { label: 'Blogs', key: 'blogCount', sortable: true, type: 'number' },
+      { label: 'RPM', key: 'rpm', sortable: true, type: 'currency' },
+      { label: 'Views', key: 'views', sortable: true, type: 'number' },
+      { label: 'Clicks', key: 'clicks', sortable: true, type: 'number' },
+      { label: 'Today', key: 'today', sortable: true, type: 'currency' },
+      { label: 'Yesterday', key: 'yesterday', sortable: true, type: 'currency' },
+      { label: 'Month', key: 'month', sortable: true, type: 'currency' },
+      { label: 'Balance', key: 'balance', sortable: true, type: 'currency' },
+      { label: 'Updated', key: 'updated', sortable: false, type: 'center' },
+    ];
+    const totalRecords = total?.count;
+    const summary = `today: ${total.today} $, yesterday: ${total.yesterday} $, month: ${total.month} $`;
+    const filters = [{ key: 'anything', label: 'Anything', type: 'text' }];
+    return { title: 'Adsense Ready', headers, filters, data, totalRecords, summary };
+  }
+
+  async getAdsensePantip(page: string, limit: string, sortBy: string = 'rpm', order: string = 'desc', anything: string): Promise<LIST_RESPONSE> {
+    const where: Record<string, any> = { ...READY_PANTIP, deletedAt: null, error: null };
+    if (anything) where.$or = [{ email: new RegExp(anything, 'i') }, { pid: new RegExp(anything, 'i') }];
+
+    let [data, total] = await Promise.all([
+      this.getAdsenseList(where, Number(limit), (Number(page) - 1) * Number(limit), sortBy, order),
+      this.summaryAdsense(where),
+    ]);
+
+    const headers = [
+      { label: 'Email', key: 'email', sortable: true },
+      { label: 'PID', key: 'pid', sortable: true, link: true },
+      { label: 'Limit', key: 'limit', sortable: true, type: 'center' },
+      { label: 'Country', key: 'country', sortable: true, type: 'center' },
+      { label: 'UTC', key: 'utc', sortable: true, type: 'number' },
+      { label: 'Action', key: 'action', type: 'off', sortable: false },
+      { label: 'Blogs', key: 'blogCount', sortable: true, type: 'number' },
+      { label: 'RPM', key: 'rpm', sortable: true, type: 'currency' },
+      { label: 'Views', key: 'views', sortable: true, type: 'number' },
+      { label: 'Clicks', key: 'clicks', sortable: true, type: 'number' },
+      { label: 'Today', key: 'today', sortable: true, type: 'currency' },
+      { label: 'Yesterday', key: 'yesterday', sortable: true, type: 'currency' },
+      { label: 'Month', key: 'month', sortable: true, type: 'currency' },
+      { label: 'Balance', key: 'balance', sortable: true, type: 'currency' },
+      { label: 'Updated', key: 'updated', sortable: false, type: 'center' },
+    ];
+    const totalRecords = total?.count;
+    const summary = `today: ${total.today} $, yesterday: ${total.yesterday} $, month: ${total.month} $`;
+    const filters = [{ key: 'anything', label: 'Anything', type: 'text' }];
+    return { title: 'Adsense Ready', headers, filters, data, totalRecords, summary };
+  }
+
+  async getAdsenseList(where: any, limit: number, skip: number, sortBy: string, order: string) {
+    const data = await this.gaCollection
+      .find(where)
+      .sort({ [ADSENSE_SORT[sortBy || 'email']]: order === 'asc' ? 1 : -1 })
+      .skip(skip || 0)
+      .limit(limit || 100)
+      .toArray();
+    return data.map((d) => ({
+      ...d,
+      sites: d.sites
+        ?.filter((x) => x.status === 'Ready')
+        .map((x) => x.name)
+        .join(','),
+      country: COUNTRY_CODE[d.information?.country] || d.information?.country,
+      utc: d.information?.utc,
+      limit: d.information?.limit?.replace(' 2024', ''),
+      rpm: d.todayReport?.pageRPM,
+      views: d.todayReport?.pageViews,
+      impressions: d.todayReport?.impressions,
+      clicks: d.todayReport?.clicks,
+      today: d.todayReport?.estimatedEarnings,
+      updated: d.todayReport?.updatedAt,
+      yesterday: d.yesterdayReport?.estimatedEarnings,
+      month: d.monthReport?.estimatedEarnings,
+      on: !d.needBlog,
+      off: !!d.blogCount,
+    }));
+  }
+
+  async summaryAdsense(where: any) {
+    const result = await this.gaCollection
+      .aggregate([
+        { $match: where },
+        {
+          $group: {
+            _id: '',
+            today: { $sum: '$todayReport.estimatedEarnings' },
+            yesterday: { $sum: '$yesterdayReport.estimatedEarnings' },
+            month: { $sum: '$monthReport.estimatedEarnings' },
+            count: { $sum: 1 },
+          },
+        },
+      ])
+      .toArray();
+    return result[0];
+  }
+
+  async getWebsites(status: string, wordpress: string, name: string) {
+    const adsenseData = await this.gaCollection.find({ error: null, 'sites.status': status }).toArray();
+    const data = [];
+
+    adsenseData.forEach((ga) => {
+      ga.sites.forEach((site) => {
+        if (
+          site.status === status &&
+          (!wordpress || !/html5gameportal.com|minigame.vip|pantip.com/.test(site.name)) &&
+          (!name || new RegExp(name).test(site.name))
+        ) {
+          data.push(site);
+        }
+      });
+    });
+    const headers = [
+      { label: 'Email', key: 'email', sortable: true },
+      { label: 'PID', key: 'pid', sortable: true, link: true },
+      { label: 'Limit', key: 'limit', sortable: true, type: 'center' },
+      { label: 'Country', key: 'country', sortable: true, type: 'center' },
+      { label: 'Action', key: 'action', type: 'off', sortable: false },
+      { label: 'Blogs', key: 'blogCount', sortable: true, type: 'number' },
+      { label: 'RPM', key: 'rpm', sortable: true, type: 'currency' },
+      { label: 'Views', key: 'views', sortable: true, type: 'number' },
+      { label: 'Clicks', key: 'clicks', sortable: true, type: 'number' },
+      { label: 'Today', key: 'today', sortable: true, type: 'currency' },
+      { label: 'Month', key: 'month', sortable: true, type: 'currency' },
+      { label: 'Balance', key: 'balance', sortable: true, type: 'currency' },
+      { label: 'Sites', key: 'sites', sortable: false },
+    ];
+    const totalRecords = data.length;
+    const filters = [
+      { key: 'name', label: 'Site', type: 'text' },
+      { key: 'wordpress', label: 'Wordpress', type: 'checkbox' },
+    ];
+    return { title: 'Adsense Ready', headers, filters, data, totalRecords, summary: '' };
   }
 }

@@ -97,7 +97,7 @@ if (typeof CommonListComponent === 'undefined') {
     renderTableData(headers, data) {
       data.forEach((item, index) => {
         const tr = document.createElement('tr');
-        let rowHTML = `<td>${(this.currentPage - 1) * this.rowsPerPage + index + 1}</td>`;
+        let rowHTML = `<td class="align-right">${(this.currentPage - 1) * this.rowsPerPage + index + 1}</td>`;
 
         headers.forEach((header) => {
           let tdClass = '';
@@ -107,10 +107,8 @@ if (typeof CommonListComponent === 'undefined') {
           } else if (header.key === 'action') {
             this.doneIcon = `./assets/${header.type ? header.type + '-' : ''}done-icon.svg`;
             const runIcon = `./assets/${header.type ? header.type + '-' : ''}run-icon.svg`;
-            if (item.action === 'run') {
+            if (item[header.type]) {
               cellValue = `<img src="${runIcon}" class="small-icon clickable" data-pid="${item.pid}">`;
-            } else if (item.action === 'done') {
-              cellValue = `<img src="${this.doneIcon}" class="small-icon">`;
             }
             tdClass = 'align-center';
           } else if (header.type === 'currency') {
@@ -133,7 +131,7 @@ if (typeof CommonListComponent === 'undefined') {
         icon.addEventListener('click', async (event) => {
           const pid = event.target.getAttribute('data-pid');
           try {
-            const response = await fetch(`http://localhost:3000/adsense/wordpress?pid=${pid}`, { method: 'POST' });
+            const response = await fetch(`${this.config.apiEndpoint}?pid=${pid}`, { method: 'POST' });
             if (response.status === 201) {
               event.target.src = this.doneIcon;
               event.target.classList.remove('clickable');

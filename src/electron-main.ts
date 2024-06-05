@@ -107,7 +107,7 @@ app.on('ready', () => {
       label: 'Adsense',
       submenu: [
         {
-          label: 'List All',
+          label: 'Using',
           click: () => {
             mainWindow?.loadURL(
               url.format({
@@ -147,7 +147,7 @@ app.on('ready', () => {
           click: () => {
             mainWindow?.loadURL(
               url.format({
-                pathname: path.join(__dirname, '..', 'src', 'frontend', 'adsense-unused', 'adsense-unused.html'),
+                pathname: path.join(__dirname, '..', 'src', 'frontend', 'adsense-unused.html'),
                 protocol: 'file:',
                 slashes: true,
               }),
@@ -159,7 +159,7 @@ app.on('ready', () => {
           click: () => {
             mainWindow?.loadURL(
               url.format({
-                pathname: path.join(__dirname, '..', 'src', 'frontend', 'adsense-error', 'adsense-error.html'),
+                pathname: path.join(__dirname, '..', 'src', 'frontend', 'adsense-error.html'),
                 protocol: 'file:',
                 slashes: true,
               }),

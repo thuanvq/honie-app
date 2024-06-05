@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { ViewerService } from './viewer.service';
+import { MongoDBService } from '../mongodb/mongodb.service';
 import { ViewerController } from './viewer.controller';
-import { MongodbModule } from '../mongodb/mongodb.module';
+import { ViewerService } from './viewer.service';
 
 @Module({
-  imports: [MongodbModule],
-  providers: [ViewerService],
+  imports: [],
+  providers: [ViewerService, MongoDBService],
   controllers: [ViewerController],
 })
 export class ViewerModule {}

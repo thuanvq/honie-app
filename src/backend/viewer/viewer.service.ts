@@ -1,12 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { MongodbService } from '../mongodb/mongodb.service';
 
 @Injectable()
 export class ViewerService {
-  constructor(private readonly mongodbService: MongodbService) {}
+  // constructor(private readonly mongodbService: MongoDBService) {}
 
   async getCollections() {
-    return this.mongodbService.listCollections();
+    // return this.mongodbService.listCollections();
   }
 
   async queryCollection(
@@ -17,13 +16,6 @@ export class ViewerService {
     skip: number,
     limit: number,
   ) {
-    return this.mongodbService.fetchData(
-      collection,
-      condition,
-      projection,
-      sort,
-      skip,
-      limit,
-    );
+    // return this.mongodbService.fetchData(collection, condition, projection, sort, skip, limit);
   }
 }
