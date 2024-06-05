@@ -82,7 +82,7 @@ tbody tr:nth-child(even) {
 }
 
 .small-icon {
-  width: 40%;
+  width: 30%;
 }
 .clickable {
   cursor: pointer;

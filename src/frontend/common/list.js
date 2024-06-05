@@ -1,3 +1,5 @@
+const { ipcRenderer } = require('electron');
+
 if (typeof CommonListComponent === 'undefined') {
   let init = false;
   class CommonListComponent {
@@ -5,7 +7,7 @@ if (typeof CommonListComponent === 'undefined') {
       this.config = config;
       this.currentPage = 1;
       this.rowsPerPage = 100;
-      this.currentSort = { column: '', order: 'asc' };
+      this.currentSort = { column: '', order: '' };
       this.debounceTimer = null;
       this.init();
     }
@@ -101,7 +103,7 @@ if (typeof CommonListComponent === 'undefined') {
           let tdClass = '';
           let cellValue = item[header.key] || '';
           if (header.key === 'pid' && cellValue) {
-            cellValue = `<a href="adsense-detail.html?pid=${item.pid}" target="_blank">${item.pid}</a>`;
+            cellValue = `<a href="#" onclick="openDetail('${item.pid}')">${item.pid}</a>`;
           } else if (header.key === 'action') {
             this.doneIcon = `./assets/${header.type ? header.type + '-' : ''}done-icon.svg`;
             const runIcon = `./assets/${header.type ? header.type + '-' : ''}run-icon.svg`;
@@ -117,6 +119,8 @@ if (typeof CommonListComponent === 'undefined') {
           } else if (header.type === 'number') {
             cellValue = formatNumber(item[header.key]);
             tdClass = 'align-right';
+          } else if (header.type === 'center') {
+            tdClass = 'align-center';
           }
           rowHTML += `<td class="${tdClass}">${cellValue}</td>`;
         });
@@ -166,10 +170,10 @@ if (typeof CommonListComponent === 'undefined') {
 
     handleSort(column) {
       if (this.currentSort.column === column) {
-        this.currentSort.order = this.currentSort.order === 'asc' ? 'desc' : 'asc';
+        this.currentSort.order = this.currentSort.order === 'desc' ? 'asc' : 'desc';
       } else {
         this.currentSort.column = column;
-        this.currentSort.order = 'asc';
+        this.currentSort.order = 'desc';
       }
       this.fetchAndRenderData();
       this.updateSortIcons();
@@ -180,7 +184,7 @@ if (typeof CommonListComponent === 'undefined') {
         const sortBy = header.getAttribute('data-sort');
         if (sortBy === this.currentSort.column) {
           header.innerHTML = `${header.getAttribute('data-label')} <span style="font-size: 12px; color: #aaa;">${
-            this.currentSort.order === 'asc' ? '▲' : '▼'
+            this.currentSort.order === 'desc' ? '▼' : '▲'
           }</span>`;
         } else {
           header.innerHTML = header.getAttribute('data-label');
@@ -247,6 +251,9 @@ if (typeof CommonListComponent === 'undefined') {
       })
       .catch((error) => console.error('Error loading common list:', error));
   }
+  window.openDetail = function (pid) {
+    ipcRenderer.send('open-detail-window', pid);
+  };
 }
 
 function formatCurrency(value) {

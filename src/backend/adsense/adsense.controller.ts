@@ -7,15 +7,26 @@ import { AdsenseService } from './adsense.service';
 export class AdsenseController {
   constructor(private readonly adsenseService: AdsenseService) {}
 
-  @Get('data')
-  getAdsenseData(
+  @Get('using')
+  getAdsenseUsing(
     @Query('page') page: string,
     @Query('limit') limit: string,
     @Query('sortBy') sortBy: string,
     @Query('order') order: string,
-    @Query('invite') invite: string,
+    @Query('anything') anything: string,
   ) {
-    return this.adsenseService.getAdsenseData(page, limit, sortBy, order, invite);
+    return this.adsenseService.getAdsenseUsing(page, limit, sortBy, order, anything);
+  }
+
+  @Get('pantip')
+  getAdsensePantip(
+    @Query('page') page: string,
+    @Query('limit') limit: string,
+    @Query('sortBy') sortBy: string,
+    @Query('order') order: string,
+    @Query('anything') anything: string,
+  ) {
+    return this.adsenseService.getAdsensePantip(page, limit, sortBy, order, anything);
   }
 
   @Get('summary')

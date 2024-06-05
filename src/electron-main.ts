@@ -21,7 +21,7 @@ function createWindow() {
   });
 
   const startUrl = url.format({
-    pathname: path.join(__dirname, '..', 'src', 'frontend', 'adsense', 'adsense.html'),
+    pathname: path.join(__dirname, '..', 'src', 'frontend', 'adsense-using.html'),
     protocol: 'file:',
     slashes: true,
   });
@@ -111,7 +111,7 @@ app.on('ready', () => {
           click: () => {
             mainWindow?.loadURL(
               url.format({
-                pathname: path.join(__dirname, '..', 'src', 'frontend', 'adsense', 'adsense.html'),
+                pathname: path.join(__dirname, '..', 'src', 'frontend', 'adsense-using.html'),
                 protocol: 'file:',
                 slashes: true,
               }),
@@ -119,11 +119,23 @@ app.on('ready', () => {
           },
         },
         {
-          label: 'Error',
+          label: 'Pantip.com',
           click: () => {
             mainWindow?.loadURL(
               url.format({
-                pathname: path.join(__dirname, '..', 'src', 'frontend', 'adsense-error', 'adsense-error.html'),
+                pathname: path.join(__dirname, '..', 'src', 'frontend', 'adsense-pantip.html'),
+                protocol: 'file:',
+                slashes: true,
+              }),
+            );
+          },
+        },
+        {
+          label: 'Wordpress',
+          click: () => {
+            mainWindow?.loadURL(
+              url.format({
+                pathname: path.join(__dirname, '..', 'src', 'frontend', 'adsense-wordpress.html'),
                 protocol: 'file:',
                 slashes: true,
               }),
@@ -143,11 +155,11 @@ app.on('ready', () => {
           },
         },
         {
-          label: 'Wordpress',
+          label: 'Error',
           click: () => {
             mainWindow?.loadURL(
               url.format({
-                pathname: path.join(__dirname, '..', 'src', 'frontend', 'adsense-wordpress.html'),
+                pathname: path.join(__dirname, '..', 'src', 'frontend', 'adsense-error', 'adsense-error.html'),
                 protocol: 'file:',
                 slashes: true,
               }),

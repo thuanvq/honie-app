@@ -8,7 +8,7 @@ import { MongodbService } from '../mongodb/mongodb.service';
 export class AdsenseService {
   constructor(private readonly mongodbService: MongodbService) {}
 
-  async getAdsenseData(
+  async x(
     page: string = '1',
     limit: string = '100',
     sortBy: string = 'rpm',
@@ -224,12 +224,7 @@ export class AdsenseService {
       deletedAt: null,
       error: null,
     };
-    if (anything)
-      where.$or = [
-        { email: new RegExp(anything, 'i') },
-        { pid: new RegExp(anything, 'i') },
-        { sites: { $elemMatch: { name: new RegExp(anything, 'i'), status: 'Ready' } } },
-      ];
+    if (anything) where.$or = [{ email: new RegExp(anything, 'i') }, { pid: new RegExp(anything, 'i') }];
 
     let [data, total] = await Promise.all([
       this.mongodbService.fetchData(
@@ -286,8 +281,8 @@ export class AdsenseService {
     const headers = [
       { label: 'Email', key: 'email', sortable: true },
       { label: 'PID', key: 'pid', sortable: true, link: true },
-      { label: 'Limit', key: 'limit', sortable: true },
-      { label: 'Action', key: 'action', sortable: false },
+      { label: 'Limit', key: 'limit', sortable: true, type: 'center' },
+      { label: 'Action', key: 'action', type: 'on', sortable: false },
       { label: 'RPM', key: 'rpm', sortable: true, type: 'currency' },
       { label: 'Views', key: 'views', sortable: true, type: 'number' },
       { label: 'Today', key: 'today', sortable: true, type: 'currency' },
@@ -305,5 +300,122 @@ export class AdsenseService {
   async runAdsenseWordpress(pid: string) {
     console.log('runAdsenseWordpress');
     return true;
+  }
+
+  async getAdsenseUsing(
+    page: string = '1',
+    limit: string = '100',
+    sortBy: string = 'rpm',
+    order: string = 'desc',
+    anything: string,
+  ): Promise<LIST_RESPONSE> {
+    const where: Record<string, any> = { 'sites.status': 'Ready', deletedAt: null, error: null };
+    return this.getAdsenseList(page, limit, sortBy, order, anything, where);
+  }
+
+  async getAdsensePantip(
+    page: string = '1',
+    limit: string = '100',
+    sortBy: string = 'rpm',
+    order: string = 'desc',
+    anything: string,
+  ): Promise<LIST_RESPONSE> {
+    const where: Record<string, any> = {
+      sites: { $elemMatch: { name: /pantip.com/, status: 'Ready' } },
+      deletedAt: null,
+      error: null,
+    };
+    return this.getAdsenseList(page, limit, sortBy, order, anything, where);
+  }
+
+  async getAdsenseList(
+    page: string = '1',
+    limit: string = '100',
+    sortBy: string = 'rpm',
+    order: string = 'desc',
+    anything: string,
+    where: Record<string, any>,
+  ): Promise<LIST_RESPONSE> {
+    if (anything) where.$or = [{ email: new RegExp(anything, 'i') }, { pid: new RegExp(anything, 'i') }];
+
+    let [data, total] = await Promise.all([
+      this.mongodbService.fetchData(
+        'google_adsense',
+        where,
+        {
+          email: 1,
+          pid: 1,
+          balance: 1,
+          todayReport: 1,
+          monthReport: 1,
+          yesterdayReport: 1,
+          information: 1,
+          sites: 1,
+          blogCount: 1,
+          needBlog: 1,
+        },
+        { [SORT_FIELDS[sortBy || 'rpm'] || sortBy]: order === 'asc' ? 1 : -1 },
+        (Number(page) - 1) * Number(limit),
+        Number(limit),
+      ),
+      this.mongodbService.aggregate({
+        collectionName: 'google_adsense',
+        match: where,
+        group: {
+          _id: '',
+          today: { $sum: '$todayReport.estimatedEarnings' },
+          yesterday: { $sum: '$yesterdayReport.estimatedEarnings' },
+          month: { $sum: '$monthReport.estimatedEarnings' },
+          count: { $sum: 1 },
+        },
+      }),
+    ]);
+
+    data = data.map((data) => {
+      const sites = data.sites
+        .filter((s) => s.status === 'Ready')
+        .map((s) => s.name)
+        .join(',');
+      return {
+        email: data.email,
+        pid: data.pid,
+        limit: data.information?.limit?.replace(' 2024', ''),
+        country: COUNTRY_CODE[data.information.country],
+        utc: data.information.utc,
+        blogs: data.blogCount,
+        rpm: data.todayReport?.pageRPM,
+        views: data.todayReport?.pageViews,
+        impressions: data.todayReport?.impressions,
+        clicks: data.todayReport?.clicks,
+        today: data.todayReport?.estimatedEarnings,
+        updated: data.todayReport?.updatedAt,
+        yesterday: data.yesterdayReport?.estimatedEarnings,
+        month: data.monthReport?.estimatedEarnings,
+        balance: data.balance,
+        sites: sites,
+        action: data.blogCount ? 'run' : '',
+      };
+    });
+    const headers = [
+      { label: 'Email', key: 'email', sortable: true },
+      { label: 'PID', key: 'pid', sortable: true, link: true },
+      { label: 'Limit', key: 'limit', sortable: true, type: 'center' },
+      { label: 'Country', key: 'country', sortable: true, type: 'center' },
+      { label: 'UTC', key: 'utc', sortable: true, type: 'number' },
+      { label: 'Action', key: 'action', type: 'off', sortable: false },
+      { label: 'Blogs', key: 'blogs', sortable: true, type: 'number' },
+      { label: 'RPM', key: 'rpm', sortable: true, type: 'currency' },
+      { label: 'Views', key: 'views', sortable: true, type: 'number' },
+      { label: 'Clicks', key: 'clicks', sortable: true, type: 'number' },
+      { label: 'Today', key: 'today', sortable: true, type: 'currency' },
+      { label: 'Yesterday', key: 'yesterday', sortable: true, type: 'currency' },
+      { label: 'Month', key: 'month', sortable: true, type: 'currency' },
+      { label: 'Balance', key: 'balance', sortable: true, type: 'currency' },
+      { label: 'Updated', key: 'updated', sortable: false, type: 'center' },
+    ];
+    const totalRecords = total[0].count;
+    const summary = `today: ${total[0].today} $, yesterday: ${total[0].yesterday} $, month: ${total[0].month} $`;
+    const filters = [{ key: 'anything', label: 'Anything', type: 'text' }];
+    return { title: 'Adsense Ready', headers, filters, data, totalRecords, summary };
   }
 }
