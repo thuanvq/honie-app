@@ -11,6 +11,10 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
           document.getElementById('email').textContent = data.email || '';
           document.getElementById('pid').textContent = data.pid || '';
+          const refetch = document.createElement('a');
+          refetch.innerText = 'refetch';
+          refetch.setAttribute('onclick', `openRefetch('${pid}')`);
+          document.getElementById('refetch').appendChild(refetch);
           hideNotFound();
 
           populateSitesTable(data.sites || []);
@@ -165,3 +169,6 @@ function generateReportRow(report) {
       `;
   return tr;
 }
+window.openRefetch = function (pid) {
+  window.electron.ipcRenderer.send('open-refetch-window', pid);
+};

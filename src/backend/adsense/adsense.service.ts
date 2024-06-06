@@ -142,6 +142,8 @@ export class AdsenseService {
   }
 
   async getAdsenseReady(page: string, limit: string, sortBy: string = 'rpm', order: string, anything: string): Promise<LIST_RESPONSE> {
+    sortBy = sortBy || 'rpm';
+    order = order || 'desc';
     const where: Record<string, any> = { 'sites.status': 'Ready', deletedAt: null, error: null };
     if (anything) where.$or = [{ email: new RegExp(anything, 'i') }, { pid: new RegExp(anything, 'i') }];
 
@@ -174,6 +176,8 @@ export class AdsenseService {
   }
 
   async getAdsenseRunning(page: string, limit: string, sortBy: string = 'rpm', order: string, anything: string): Promise<LIST_RESPONSE> {
+    sortBy = sortBy || 'rpm';
+    order = order || 'desc';
     const where: Record<string, any> = { blogCount: { $gt: 0 }, deletedAt: null, error: null };
     if (anything) where.$or = [{ email: new RegExp(anything, 'i') }, { pid: new RegExp(anything, 'i') }];
 
@@ -316,7 +320,7 @@ const ADSENSE_COLUMN = {
   YESTERDAY: { label: 'Yesterday', key: 'yesterday', sortable: true, type: 'currency' },
   MONTH: { label: 'Month', key: 'month', sortable: true, type: 'currency' },
   BALANCE: { label: 'Balance', key: 'balance', sortable: true, type: 'currency' },
-  UPDATED: { label: 'Updated', key: 'updated', sortable: false, type: 'center' },
+  UPDATED: { label: 'Updated', key: 'updated', sortable: true, type: 'center' },
   SITES: { label: 'Sites', key: 'sites', sortable: false },
   ERROR: { label: 'Error', key: 'error', sortable: false, type: 'center' },
 };

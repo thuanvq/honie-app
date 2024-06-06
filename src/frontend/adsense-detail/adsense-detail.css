@@ -93,3 +93,9 @@ button:disabled {
 button:hover:not(:disabled) {
   background-color: #0056b3;
 }
+
+.refetch-link {
+  cursor: pointer;
+  color: #007bff;
+  margin-left: 30px;
+}

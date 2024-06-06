@@ -42,6 +42,51 @@ export class AdsenseService {
     console.log('🔴', new Date(), functionName, '----> COMPLETED');
   }
 
+  async syncSite(pid: string) {
+    const functionName = 'syncAll';
+    console.log('🟢', new Date(), functionName, '----> STARTED');
+
+    const ga = await this.googleAdsenseCollection.findOne({ pid });
+    const { _id, email, cookies, ablToken, aboToken, utc } = ga;
+
+    const syncSites = await AdSenseUtils.fetchSites(email, cookies, ablToken, pid);
+    await this.googleAdsenseCollection.updateOne({ _id }, { $set: syncSites });
+    await Promise.all(
+      syncSites.sites.map((site) => this.sitesApplyCollection.updateOne({ name: site.name }, { $set: { ...site, email, pid } }, { upsert: true })),
+    );
+
+    console.log('🔴', new Date(), functionName, '----> COMPLETED');
+    return syncSites.sites;
+  }
+
+  async syncToday(pid: string) {
+    const functionName = 'syncAll';
+    console.log('🟢', new Date(), functionName, '----> STARTED');
+
+    const ga = await this.googleAdsenseCollection.findOne({ pid });
+    const { _id, email, cookies, ablToken, aboToken, utc } = ga;
+
+    const syncToday = await AdSenseUtils.fetchTodayReport(email, cookies, aboToken, pid);
+    await this.googleAdsenseCollection.updateOne({ _id }, { $set: syncToday });
+
+    console.log('🔴', new Date(), functionName, '----> COMPLETED');
+    return syncToday.siteReport;
+  }
+
+  async syncMonth(pid: string) {
+    const functionName = 'syncAll';
+    console.log('🟢', new Date(), functionName, '----> STARTED');
+
+    const ga = await this.googleAdsenseCollection.findOne({ pid });
+    const { _id, email, cookies, ablToken, aboToken, utc } = ga;
+
+    const syncMonth = await AdSenseUtils.fetchReportMonth(email, cookies, aboToken, utc, pid);
+    await this.googleAdsenseCollection.updateOne({ _id }, { $set: syncMonth });
+
+    console.log('🔴', new Date(), functionName, '----> COMPLETED');
+    return syncMonth.report;
+  }
+
   // async syncSites() {
   //   const functionName = 'syncSites';
   //   console.log('🟢', new Date(), functionName, '----> STARTED');

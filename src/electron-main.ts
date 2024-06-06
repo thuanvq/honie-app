@@ -128,6 +128,35 @@ ipcMain.on('open-detail-window', (event, pid) => {
   createDetailWindow(pid);
 });
 
+function createRefetchWindow(pid: string) {
+  let refetchWindow: BrowserWindow | null = new BrowserWindow({
+    width: 1600,
+    height: 1200,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false,
+      contextIsolation: true,
+    },
+  });
+
+  const detailUrl = url.format({
+    pathname: path.join(__dirname, '..', 'src', 'frontend', 'adsense-detail', 'refetch.html'),
+    protocol: 'file:',
+    slashes: true,
+    search: `?pid=${pid}`,
+  });
+
+  refetchWindow.loadURL(detailUrl);
+
+  refetchWindow.on('closed', () => {
+    refetchWindow = null;
+  });
+}
+
+ipcMain.on('open-refetch-window', (event, pid) => {
+  createRefetchWindow(pid);
+});
+
 async function createWebViewWindow(siteUrl) {
   let webViewWindow = new BrowserWindow({
     width: 1600,

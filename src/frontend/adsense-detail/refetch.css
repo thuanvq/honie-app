@@ -1,0 +1,36 @@
+body {
+  font-family: Arial, sans-serif;
+}
+
+.container {
+  max-width: 800px;
+  margin: auto;
+  padding: 20px;
+  text-align: center;
+}
+
+.input-section {
+  margin-bottom: 20px;
+}
+
+.button-section button {
+  margin: 10px;
+  padding: 10px 20px;
+  font-size: 16px;
+}
+
+.result-section {
+  margin-top: 20px;
+}
+
+.result-display {
+  margin: 20px 0;
+  padding: 10px;
+  border: 1px solid #ddd;
+  min-height: 50px;
+  background-color: #f9f9f9;
+}
+
+.loading {
+  background: url('./assets/loading.gif') center center no-repeat;
+}

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Refetch Data</title>
+    <link rel="stylesheet" href="./common/list.css" />
+    <style>
+      .result-area {
+        padding: 10px;
+        margin-top: 20px;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        white-space: pre;
+        font-family: monospace;
+      }
+      .loading {
+        text-align: center;
+        padding: 20px;
+      }
+      .buttons {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+      .buttons button {
+        padding: 10px 20px;
+        font-size: 14px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        background-color: #007bff;
+        color: white;
+      }
+      .buttons button:hover {
+        background-color: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="component-root">
+      <h1>Refetch Data</h1>
+      <div>PID: <span id="pid"></span></div>
+      <div class="buttons">
+        <button id="refetch-sites">Refetch Sites</button>
+        <button id="refetch-today">Refetch Today</button>
+        <button id="refetch-month">Refetch Month</button>
+        <button id="refetch-all">Refetch All</button>
+      </div>
+      <div id="result-area" class="result-area"></div>
+    </div>
+    <script src="./common/list.js"></script>
+    <script>
+      const pid = new URLSearchParams(window.location.search).get('pid');
+      document.getElementById('pid').textContent = pid;
+
+      const resultArea = document.getElementById('result-area');
+      const buttons = document.querySelectorAll('.buttons button');
+
+      buttons.forEach((button) => {
+        button.addEventListener('click', async () => {
+          const apiMap = {
+            'refetch-sites': 'http://localhost:3000/adsense-sync/refetch-sites',
+            'refetch-today': 'http://localhost:3000/adsense-sync/refetch-today',
+            'refetch-month': 'http://localhost:3000/adsense-sync/refetch-month',
+            'refetch-all': 'http://localhost:3000/adsense-sync/refetch-all',
+          };
+          const apiUrl = apiMap[button.id];
+
+          resultArea.innerHTML = '<div class="loading">Loading...</div>';
+
+          try {
+            const response = await fetch(`${apiUrl}?pid=${pid}`, {
+              method: 'GET',
+              headers: { 'Content-Type': 'application/json' },
+            });
+            const data = await response.json();
+            resultArea.innerHTML = formatTable(data);
+          } catch (error) {
+            resultArea.innerHTML = `<div class="error">Error fetching data: ${error.message}</div>`;
+          }
+        });
+      });
+
+      function formatTable(data) {
+        if (!Array.isArray(data) || data.length === 0) return '<div class="error">No data available</div>';
+
+        const headers = Object.keys(data[0]);
+        let table = '<table border="1" cellspacing="0" cellpadding="5"><thead><tr>';
+        table += `<th></th>`;
+        headers.forEach((header) => {
+          table += `<th>${header}</th>`;
+        });
+        table += '</tr></thead><tbody>';
+        data.forEach((row, index) => {
+          table += `<tr><td>${index}</td>`;
+          headers.forEach((header) => {
+            table += `<td>${row[header]}</td>`;
+          });
+          table += '</tr>';
+        });
+        table += '</tbody></table>';
+        return table;
+      }
+    </script>
+  </body>
+</html>

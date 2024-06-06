@@ -5,6 +5,18 @@ import { AdsenseService } from './adsense-sync.service';
 export class AdsenseSyncController {
   constructor(private readonly adsenseService: AdsenseService) {}
 
+  @Get('refetch-sites')
+  syncSite(@Query('pid') pid: string) {
+    return this.adsenseService.syncSite(pid);
+  }
+  @Get('refetch-today')
+  syncToday(@Query('pid') pid: string) {
+    return this.adsenseService.syncToday(pid);
+  }
+  @Get('refetch-month')
+  syncMonth(@Query('pid') pid: string) {
+    return this.adsenseService.syncMonth(pid);
+  }
   @Get('all')
   syncAll(@Query('pid') pid: string) {
     return this.adsenseService.syncAll(pid);
