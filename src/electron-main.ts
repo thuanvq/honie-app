@@ -28,7 +28,6 @@ function createWindow() {
   });
 
   mainWindow.loadURL(startUrl);
-  //   mainWindow.webContents.openDevTools();
 
   mainWindow.webContents.on('new-window' as any, (event, externalUrl) => {
     event.preventDefault();
@@ -88,7 +87,6 @@ function createWebViewWindow(siteUrl) {
   });
 
   webViewWindow.loadURL(webViewUrl);
-  webViewWindow.webContents.openDevTools();
 
   webViewWindow.webContents.on('did-finish-load', () => {
     webViewWindow.webContents.send('load-url', siteUrl);
@@ -106,31 +104,7 @@ ipcMain.on('open-webview', (event, siteUrl) => {
 app.on('ready', () => {
   setTimeout(() => createWindow(), 2000);
 
-  // Register global shortcuts
-  const registerShortcuts = () => {
-    globalShortcut.register('Ctrl+Shift+I', () => {
-      if (mainWindow && mainWindow.webContents.isDevToolsOpened()) {
-        mainWindow.webContents.closeDevTools();
-      } else if (mainWindow) {
-        mainWindow.webContents.openDevTools();
-      }
-    });
-  };
-
-  registerShortcuts();
-
   const template = [
-    {
-      label: 'App',
-      submenu: [
-        {
-          label: 'About MyApp',
-          click: () => {
-            console.log('About Menu Item Clicked');
-          },
-        },
-      ],
-    },
     {
       label: 'Adsense',
       submenu: [
@@ -293,6 +267,24 @@ app.on('ready', () => {
                 search: `?status=Needs attention`,
               }),
             );
+          },
+        },
+      ],
+    },
+    {
+      label: 'Tools',
+      submenu: [
+        {
+          label: 'DevTools',
+          click: () => {
+            const focusedWindow = BrowserWindow.getFocusedWindow();
+            if (focusedWindow) {
+              if (focusedWindow.webContents.isDevToolsOpened()) {
+                focusedWindow.webContents.closeDevTools();
+              } else {
+                focusedWindow.webContents.openDevTools();
+              }
+            }
           },
         },
       ],

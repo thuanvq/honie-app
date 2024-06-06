@@ -1,5 +1,3 @@
-const { shell } = require('electron');
-
 document.addEventListener('DOMContentLoaded', function () {
   const params = new URLSearchParams(window.location.search);
   let pid = params.get('pid');
@@ -16,18 +14,10 @@ document.addEventListener('DOMContentLoaded', function () {
           hideNotFound();
 
           populateSitesTable(data.sites || []);
-          populateReportTable(
-            data.report || [],
-            data.monthReport || {},
-            data.todayReport || {},
-          );
+          populateReportTable(data.report || [], data.monthReport || {}, data.todayReport || {});
 
           const detailElement = document.getElementById('adsense-detail');
-          detailElement.innerHTML = syntaxHighlight(
-            JSON.stringify(data, null, 2),
-            data.email,
-            data.pid,
-          );
+          detailElement.innerHTML = syntaxHighlight(JSON.stringify(data, null, 2), data.email, data.pid);
         }
       })
       .catch((error) => {
@@ -42,9 +32,7 @@ document.addEventListener('DOMContentLoaded', function () {
     sites.forEach((site) => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td><a href="#" onclick="openExternalLink('${site.url}')">${
-        site.name
-      }</a></td>
+        <td><a href="#" onclick="openWebView('${site.name}')">${site.name}</a></td>
         <td class="${getStatusClass(site.status)}">${site.status}</td>
         <td>${site.fetchedAt}</td>
       `;
@@ -67,9 +55,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  function openExternalLink(url) {
-    shell.openExternal(url);
-  }
+  window.openWebView = function (website) {
+    window.electron.ipcRenderer.send('open-webview', `https://${website}`);
+  };
 
   function populateReportTable(report, monthReport, todayReport) {
     const tbody = document.querySelector('#report-table tbody');
@@ -79,15 +67,11 @@ document.addEventListener('DOMContentLoaded', function () {
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td style="text-align: left;">${site}</td>
-        <td style="text-align: right;">${formatCurrency(
-          report.estimatedEarnings,
-        )}</td>
+        <td style="text-align: right;">${formatCurrency(report.estimatedEarnings)}</td>
         <td style="text-align: right;">${formatNumber(report.pageViews)}</td>
         <td style="text-align: right;">${formatCurrency(report.pageRPM)}</td>
         <td style="text-align: right;">${formatNumber(report.impressions)}</td>
-        <td style="text-align: right;">${formatCurrency(
-          report.impressionRPM,
-        )}</td>
+        <td style="text-align: right;">${formatCurrency(report.impressionRPM)}</td>
         <td style="text-align: right;">${report.clicks || ''}</td>
         <td style="text-align: right;">${formatCurrency(report.cpc)}</td>
         <td style="text-align: right;">${formatPercent(report.pageCTR)}</td>
@@ -120,36 +104,27 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function syntaxHighlight(json, email, pid) {
-    json = json
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-    return json.replace(
-      /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
-      function (match) {
-        let cls = 'json-value';
-        if (/^"/.test(match)) {
-          if (/:$/.test(match)) {
-            cls = 'json-key';
-          } else {
-            cls = 'json-string';
-          }
-        } else if (/true|false/.test(match)) {
-          cls = 'json-boolean';
-        } else if (/null/.test(match)) {
-          cls = 'json-null';
+    json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+      let cls = 'json-value';
+      if (/^"/.test(match)) {
+        if (/:$/.test(match)) {
+          cls = 'json-key';
+        } else {
+          cls = 'json-string';
         }
+      } else if (/true|false/.test(match)) {
+        cls = 'json-boolean';
+      } else if (/null/.test(match)) {
+        cls = 'json-null';
+      }
 
-        if (
-          (match.includes(email) || match.includes(pid)) &&
-          match.includes('adsense')
-        ) {
-          cls += ' json-highlight';
-        }
+      if ((match.includes(email) || match.includes(pid)) && match.includes('adsense')) {
+        cls += ' json-highlight';
+      }
 
-        return '<span class="' + cls + '">' + match + '</span>';
-      },
-    );
+      return '<span class="' + cls + '">' + match + '</span>';
+    });
   }
 
   function handleFilterInput() {
@@ -173,20 +148,14 @@ document.addEventListener('DOMContentLoaded', function () {
     notFoundMessage.style.display = 'none';
   }
 
-  document
-    .getElementById('filterInput')
-    .addEventListener('input', hideNotFound);
-  document
-    .getElementById('filterInput')
-    .addEventListener('keypress', function (event) {
-      if (event.key === 'Enter') {
-        handleFilterInput();
-      }
-    });
+  document.getElementById('filterInput').addEventListener('input', hideNotFound);
+  document.getElementById('filterInput').addEventListener('keypress', function (event) {
+    if (event.key === 'Enter') {
+      handleFilterInput();
+    }
+  });
 
-  document
-    .getElementById('viewButton')
-    .addEventListener('click', handleFilterInput);
+  document.getElementById('viewButton').addEventListener('click', handleFilterInput);
 
   fetchDetail(pid);
 });
