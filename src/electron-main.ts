@@ -30,6 +30,18 @@ async function createMenu() {
         },
       })),
     }));
+    menuTemplate.unshift({
+      label: 'Dashboard',
+      click: () => {
+        mainWindow?.loadURL(
+          url.format({
+            pathname: path.join(__dirname, '..', 'src', 'frontend', 'dashboard', 'dashboard.html'),
+            protocol: 'file:',
+            slashes: true,
+          }),
+        );
+      },
+    });
     menuTemplate.push({
       label: 'Tools',
       submenu: [
@@ -70,7 +82,7 @@ async function createWindow() {
   });
 
   const startUrl = url.format({
-    pathname: path.join(__dirname, '..', 'src', 'frontend', 'query.html'),
+    pathname: path.join(__dirname, '..', 'src', 'frontend', 'dashboard', 'dashboard.html'),
     protocol: 'file:',
     slashes: true,
   });

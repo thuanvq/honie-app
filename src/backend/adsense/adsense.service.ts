@@ -215,7 +215,7 @@ export class AdsenseService {
       country: COUNTRY_CODE[d.information?.country] || d.information?.country,
       utc: d.information?.utc,
       limit: d.information?.limit?.replace(' 2024', ''),
-      rpm: d.todayReport?.pageRPM,
+      rpm: d.todayReport?.pageRPM === -1 ? null : d.todayReport?.pageRPM,
       views: d.todayReport?.pageViews,
       impressions: d.todayReport?.impressions,
       clicks: d.todayReport?.clicks,

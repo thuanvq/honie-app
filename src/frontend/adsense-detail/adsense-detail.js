@@ -14,7 +14,8 @@ document.addEventListener('DOMContentLoaded', function () {
           hideNotFound();
 
           populateSitesTable(data.sites || []);
-          populateReportTable(data.report || [], data.monthReport || {}, data.todayReport || {});
+          populateReportSites(data.siteReport || []);
+          populateReportDates(data.report || [], data.monthReport);
 
           const detailElement = document.getElementById('adsense-detail');
           detailElement.innerHTML = syntaxHighlight(JSON.stringify(data, null, 2), data.email, data.pid);
@@ -59,48 +60,25 @@ document.addEventListener('DOMContentLoaded', function () {
     window.electron.ipcRenderer.send('open-webview', `https://${website}`);
   };
 
-  function populateReportTable(report, monthReport, todayReport) {
-    const tbody = document.querySelector('#report-table tbody');
+  function populateReportSites(reports) {
+    const tbody = document.querySelector('#report-table-site tbody');
     tbody.innerHTML = '';
 
-    function addReportRow(site, report) {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td style="text-align: left;">${site}</td>
-        <td style="text-align: right;">${formatCurrency(report.estimatedEarnings)}</td>
-        <td style="text-align: right;">${formatNumber(report.pageViews)}</td>
-        <td style="text-align: right;">${formatCurrency(report.pageRPM)}</td>
-        <td style="text-align: right;">${formatNumber(report.impressions)}</td>
-        <td style="text-align: right;">${formatCurrency(report.impressionRPM)}</td>
-        <td style="text-align: right;">${report.clicks || ''}</td>
-        <td style="text-align: right;">${formatCurrency(report.cpc)}</td>
-        <td style="text-align: right;">${formatPercent(report.pageCTR)}</td>
-        <td style="text-align: right;">${report.updatedAt || ''}</td>
-      `;
+    reports.forEach((report) => {
+      const tr = generateReportRow(report);
       tbody.appendChild(tr);
-    }
-
-    addReportRow('TODAY', todayReport);
-    report.forEach((r) => addReportRow(r.site, r));
-
-    // Add separator for MONTH row
-    const separator = document.createElement('tr');
-    separator.innerHTML = '<td colspan="10" style="height: 20px;"></td>';
-    tbody.appendChild(separator);
-
-    addReportRow('MONTH', monthReport);
+    });
   }
 
-  function formatCurrency(value) {
-    return value ? `$${value.toLocaleString()}` : '';
-  }
+  function populateReportDates(reports, monthReport) {
+    const tbody = document.querySelector('#report-table-date tbody');
+    tbody.innerHTML = '';
+    tbody.appendChild(generateReportRow({ ...monthReport, date: 'MONTH' }));
 
-  function formatNumber(value) {
-    return value ? value.toLocaleString() : '';
-  }
-
-  function formatPercent(value) {
-    return value ? `${(value * 100).toFixed(2)}%` : '';
+    reports.forEach((report) => {
+      const tr = generateReportRow(report);
+      tbody.appendChild(tr);
+    });
   }
 
   function syntaxHighlight(json, email, pid) {
@@ -159,3 +137,31 @@ document.addEventListener('DOMContentLoaded', function () {
 
   fetchDetail(pid);
 });
+
+function formatCurrency(value) {
+  return value ? `$${value.toLocaleString()}` : '';
+}
+
+function formatNumber(value) {
+  return value ? value.toLocaleString() : '';
+}
+
+function formatPercent(value) {
+  return value ? `${(value * 100).toFixed(2)}%` : '';
+}
+function generateReportRow(report) {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+        <td style="text-align: left;">${report.site || report.date}</td>
+        <td style="text-align: right;">${formatCurrency(report.estimatedEarnings)}</td>
+        <td style="text-align: right;">${formatNumber(report.pageViews)}</td>
+        <td style="text-align: right;">${formatCurrency(report.pageRPM)}</td>
+        <td style="text-align: right;">${formatNumber(report.impressions)}</td>
+        <td style="text-align: right;">${formatCurrency(report.impressionRPM)}</td>
+        <td style="text-align: right;">${report.clicks || ''}</td>
+        <td style="text-align: right;">${formatCurrency(report.cpc)}</td>
+        <td style="text-align: right;">${formatPercent(report.pageCTR)}</td>
+        <td style="text-align: right;">${report.updatedAt || ''}</td>
+      `;
+  return tr;
+}

@@ -4,7 +4,7 @@
   "main": "dist/backend/main.js",
   "scripts": {
     "start": "nest start",
-    "start:dev": "concurrently \"yarn run start:electron\" \"yarn run start:nest\"",
+    "dev": "concurrently \"yarn run start:electron\" \"yarn run start:nest\"",
     "start:electron": "tsc && electron ./dist/electron-main.js",
     "start:nest": "nodemon --watch src/backend --exec \"npx ts-node -r tsconfig-paths/register ./src/backend/main.ts\""
   },

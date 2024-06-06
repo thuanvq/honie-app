@@ -9,8 +9,14 @@ export class AppController {
   healthCheck() {
     return 'OK';
   }
+
   @Get('template')
   getTemplate(): any[] {
     return this.appService.getTemplate();
+  }
+
+  @Get('dashboard')
+  getDashboardRevenue(): any {
+    return this.appService.getDashboard();
   }
 }
