@@ -55,11 +55,9 @@
       <input type="text" id="address-bar" placeholder="Enter URL here" />
       <button id="go-button">Go</button>
     </div>
-    <webview id="webview" src="" style="flex-grow: 1"></webview>
+    <webview id="webview" src="" style="flex-grow: 1" partition="persist:webview"></webview>
     <script>
-      const { ipcRenderer } = require('electron');
-
-      ipcRenderer.on('load-url', (event, siteUrl) => {
+      window.electron.ipcRenderer.on('load-url', (siteUrl) => {
         document.getElementById('address-bar').value = siteUrl;
         document.getElementById('webview').src = siteUrl;
       });
@@ -89,13 +87,6 @@
       webview.addEventListener('dom-ready', () => {
         document.getElementById('address-bar').value = webview.getURL();
       });
-
-      // Use a mutation observer to detect URL changes within the webview
-      const observer = new MutationObserver(() => {
-        document.getElementById('address-bar').value = webview.getURL();
-      });
-
-      observer.observe(webview, { attributes: true, attributeFilter: ['src'] });
     </script>
   </body>
 </html>

@@ -15,8 +15,9 @@ function createWindow() {
     width,
     height,
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
+      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false,
+      contextIsolation: true,
     },
   });
 
@@ -44,8 +45,9 @@ function createDetailWindow(pid: string) {
     width: 1600,
     height: 1200,
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
+      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false,
+      contextIsolation: true,
     },
   });
 
@@ -72,8 +74,8 @@ function createWebViewWindow(siteUrl) {
     width: 1600,
     height: 1200,
     webPreferences: {
-      // preload: path.join(__dirname, 'preload.js'), // Use preload script
-      nodeIntegration: true,
+      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false,
       contextIsolation: true, // Enable context isolation
       webviewTag: true,
     },

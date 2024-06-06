@@ -1,5 +1,3 @@
-const { ipcRenderer } = require('electron');
-
 if (typeof CommonListComponent === 'undefined') {
   let init = false;
   class CommonListComponent {
@@ -252,10 +250,10 @@ if (typeof CommonListComponent === 'undefined') {
       .catch((error) => console.error('Error loading common list:', error));
   }
   window.openDetail = function (pid) {
-    ipcRenderer.send('open-detail-window', pid);
+    window.electron.ipcRenderer.send('open-detail-window', pid);
   };
   window.openWebView = function (website) {
-    ipcRenderer.send('open-webview', `https://${website}`);
+    window.electron.ipcRenderer.send('open-webview', `https://${website}`);
   };
 }
 
