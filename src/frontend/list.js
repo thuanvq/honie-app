@@ -194,18 +194,12 @@ if (typeof CommonListComponent === 'undefined') {
       const totalPages = Math.ceil(totalRecords / this.rowsPerPage);
       document.getElementById('prevPageTop').disabled = this.currentPage === 1;
       document.getElementById('nextPageTop').disabled = this.currentPage === totalPages;
-      document.getElementById('prevPageBottom').disabled = this.currentPage === 1;
-      document.getElementById('nextPageBottom').disabled = this.currentPage === totalPages;
 
       const prevPageTopButton = document.getElementById('prevPageTop');
       const nextPageTopButton = document.getElementById('nextPageTop');
-      const prevPageBottomButton = document.getElementById('prevPageBottom');
-      const nextPageBottomButton = document.getElementById('nextPageBottom');
 
       prevPageTopButton.removeEventListener('click', this.handlePrevPageClick);
       nextPageTopButton.removeEventListener('click', this.handleNextPageClick);
-      prevPageBottomButton.removeEventListener('click', this.handlePrevPageClick);
-      nextPageBottomButton.removeEventListener('click', this.handleNextPageClick);
 
       this.handlePrevPageClick = () => {
         if (this.currentPage > 1) {
@@ -223,8 +217,6 @@ if (typeof CommonListComponent === 'undefined') {
 
       prevPageTopButton.addEventListener('click', this.handlePrevPageClick);
       nextPageTopButton.addEventListener('click', this.handleNextPageClick);
-      prevPageBottomButton.addEventListener('click', this.handlePrevPageClick);
-      nextPageBottomButton.addEventListener('click', this.handleNextPageClick);
     }
 
     debounce(func, wait) {
@@ -236,18 +228,6 @@ if (typeof CommonListComponent === 'undefined') {
   }
 
   function loadCommonListComponent(apiEndpoint) {
-    // fetch('list.html')
-    //   .then((response) => response.text())
-    //   .then((html) => {
-    //     document.getElementById('component-root').innerHTML = html;
-    //     const script = document.createElement('script');
-    //     script.src = 'list.js';
-    //     document.body.appendChild(script);
-    //     script.onload = () => {
-    //       new CommonListComponent({ apiEndpoint });
-    //     };
-    //   })
-    //   .catch((error) => console.error('Error loading common list:', error));
     new CommonListComponent({ apiEndpoint });
   }
   window.openDetail = function (pid) {
