@@ -65,27 +65,45 @@ export class AdsenseService {
         { sites: { $elemMatch: { name: new RegExp(anything, 'i'), status: 'Ready' } } },
       ];
 
-    let [data, total] = await Promise.all([
-      this.getAdsenseList(where, Number(limit), (Number(page) - 1) * Number(limit), sortBy, order),
-      this.summaryAdsense(where),
-    ]);
+    const data = await this.gaCollection
+      .find(where)
+      .sort({ [ADSENSE_SORT[sortBy || 'email']]: order === 'asc' ? 1 : -1 })
+      .project({
+        email: 1,
+        pid: 1,
+        needBlog: 1,
+        information: 1,
+        sites: 1,
+        balance: 1,
+        monthReport: { estimatedEarnings: 1 },
+        report: { date: 1, pageRPM: 1 },
+      })
+      .toArray();
+    data.forEach((d) => {
+      d.sites = d.sites
+        ?.filter((x) => x.status === 'Ready')
+        .map((x) => x.name)
+        .join(',');
+      d.report?.forEach((r) => {
+        d[r.date] = r.pageRPM;
+      });
+      d.country = COUNTRY_CODE[d.information?.country] || d.information?.country;
+      d.utc = d.information?.utc;
+      d.limit = d.information?.limit?.replace(' 2024', '');
+      d.month = d.monthReport?.estimatedEarnings;
+      d.on = !d.needBlog;
+    });
 
-    const headers = [
-      ADSENSE_COLUMN.EMAIL,
-      ADSENSE_COLUMN.PID,
-      ADSENSE_COLUMN.LIMIT,
-      ADSENSE_COLUMN.COUNTRY,
-      ADSENSE_COLUMN.ACTION_ON,
-      ADSENSE_COLUMN.BLOG_COUNT,
-      ADSENSE_COLUMN.RPM,
-      ADSENSE_COLUMN.VIEWS,
-      ADSENSE_COLUMN.CLICKS,
-      ADSENSE_COLUMN.TODAY,
-      ADSENSE_COLUMN.MONTH,
-      ADSENSE_COLUMN.BALANCE,
-      ADSENSE_COLUMN.SITES,
-    ];
-    const totalRecords = total?.count;
+    const headers: any[] = [ADSENSE_COLUMN.EMAIL, ADSENSE_COLUMN.PID, ADSENSE_COLUMN.LIMIT, ADSENSE_COLUMN.COUNTRY, ADSENSE_COLUMN.ACTION_ON];
+    const date = new Date().getDate();
+    for (let i = date; i > 0; i--) {
+      headers.push({ label: `06-0${i}`, key: `2024060${i}`, sortable: true, type: 'currency' });
+    }
+    headers.push(ADSENSE_COLUMN.MONTH);
+    headers.push(ADSENSE_COLUMN.BALANCE);
+    headers.push(ADSENSE_COLUMN.SITES);
+
+    const totalRecords = data.length;
     const filters = [{ key: 'anything', label: 'Anything', type: 'text' }];
     return { title: 'Adsense Unused', headers, filters, data, totalRecords, summary: '' };
   }
@@ -122,7 +140,7 @@ export class AdsenseService {
     return { title: 'Adsense Wordpress', headers, filters, data, totalRecords, summary };
   }
 
-  async getAdsenseUsing(page: string, limit: string, sortBy: string = 'rpm', order: string, anything: string): Promise<LIST_RESPONSE> {
+  async getAdsenseReady(page: string, limit: string, sortBy: string = 'rpm', order: string, anything: string): Promise<LIST_RESPONSE> {
     const where: Record<string, any> = { 'sites.status': 'Ready', deletedAt: null, error: null };
     if (anything) where.$or = [{ email: new RegExp(anything, 'i') }, { pid: new RegExp(anything, 'i') }];
 
@@ -151,7 +169,40 @@ export class AdsenseService {
     const totalRecords = total?.count;
     const summary = `today: ${total.today} $, yesterday: ${total.yesterday} $, month: ${total.month} $`;
     const filters = [{ key: 'anything', label: 'Anything', type: 'text' }];
-    return { title: 'Adsense Using', headers, filters, data, totalRecords, summary };
+    return { title: 'Adsense Ready', headers, filters, data, totalRecords, summary };
+  }
+
+  async getAdsenseRunning(page: string, limit: string, sortBy: string = 'rpm', order: string, anything: string): Promise<LIST_RESPONSE> {
+    const where: Record<string, any> = { blogCount: { $gt: 0 }, deletedAt: null, error: null };
+    if (anything) where.$or = [{ email: new RegExp(anything, 'i') }, { pid: new RegExp(anything, 'i') }];
+
+    let [data, total] = await Promise.all([
+      this.getAdsenseList(where, Number(limit), (Number(page) - 1) * Number(limit), sortBy, order),
+      this.summaryAdsense(where),
+    ]);
+
+    const headers = [
+      ADSENSE_COLUMN.EMAIL,
+      ADSENSE_COLUMN.PID,
+      ADSENSE_COLUMN.LIMIT,
+      ADSENSE_COLUMN.COUNTRY,
+      ADSENSE_COLUMN.UTC,
+      ADSENSE_COLUMN.ACTION_OFF,
+      ADSENSE_COLUMN.BLOG_COUNT,
+      ADSENSE_COLUMN.RPM,
+      ADSENSE_COLUMN.VIEWS,
+      ADSENSE_COLUMN.IMPRESSIONS,
+      ADSENSE_COLUMN.CLICKS,
+      ADSENSE_COLUMN.TODAY,
+      ADSENSE_COLUMN.YESTERDAY,
+      ADSENSE_COLUMN.MONTH,
+      ADSENSE_COLUMN.BALANCE,
+      ADSENSE_COLUMN.UPDATED,
+    ];
+    const totalRecords = total?.count;
+    const summary = `today: ${total.today} $, yesterday: ${total.yesterday} $, month: ${total.month} $`;
+    const filters = [{ key: 'anything', label: 'Anything', type: 'text' }];
+    return { title: 'Adsense Running', headers, filters, data, totalRecords, summary };
   }
 
   async getAdsensePantip(page: string, limit: string, sortBy: string = 'rpm', order: string = 'desc', anything: string): Promise<LIST_RESPONSE> {
@@ -202,8 +253,8 @@ export class AdsenseService {
         information: 1,
         sites: 1,
         todayReport: 1,
-        yesterdayReport: { estimatedEarning: 1 },
-        monthReport: { estimatedEarning: 1 },
+        yesterdayReport: { estimatedEarnings: 1 },
+        monthReport: { estimatedEarnings: 1 },
       })
       .toArray();
     return data.map((d) => ({
@@ -257,6 +308,7 @@ const ADSENSE_COLUMN = {
   BLOG_COUNT: { label: 'Blogs', key: 'blogCount', sortable: true, type: 'number' },
   RPM: { label: 'RPM', key: 'rpm', sortable: true, type: 'currency' },
   VIEWS: { label: 'Views', key: 'views', sortable: true, type: 'number' },
+  IMPRESSIONS: { label: 'Impr', key: 'impressions', sortable: true, type: 'number' },
   CLICKS: { label: 'Clicks', key: 'clicks', sortable: true, type: 'number' },
   TODAY: { label: 'Today', key: 'today', sortable: true, type: 'currency' },
   YESTERDAY: { label: 'Yesterday', key: 'yesterday', sortable: true, type: 'currency' },

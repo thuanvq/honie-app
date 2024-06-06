@@ -7,7 +7,7 @@ import { AdsenseService } from './adsense.service';
 export class AdsenseController {
   constructor(private readonly adsenseService: AdsenseService) {}
 
-  @Get('using')
+  @Get('ready')
   getAdsenseUsing(
     @Query('page') page: string,
     @Query('rowsPerPage') limit: string,
@@ -15,7 +15,18 @@ export class AdsenseController {
     @Query('order') order: string,
     @Query('anything') anything: string,
   ) {
-    return this.adsenseService.getAdsenseUsing(page, limit, sortBy, order, anything);
+    return this.adsenseService.getAdsenseReady(page, limit, sortBy, order, anything);
+  }
+
+  @Get('running')
+  getAdsenseRunning(
+    @Query('page') page: string,
+    @Query('rowsPerPage') limit: string,
+    @Query('sortBy') sortBy: string,
+    @Query('order') order: string,
+    @Query('anything') anything: string,
+  ) {
+    return this.adsenseService.getAdsenseRunning(page, limit, sortBy, order, anything);
   }
 
   @Get('pantip')
@@ -71,7 +82,7 @@ export class AdsenseController {
   async addBlogspot(@Query('pid') pid: string) {
     return this.adsenseService.addBlogspot(pid);
   }
-  @Post(['using', 'pantip'])
+  @Post(['ready', 'pantip', 'running'])
   async stopBlogspot(@Query('pid') pid: string) {
     return this.adsenseService.stopBlogspot(pid);
   }

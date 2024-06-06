@@ -7,7 +7,8 @@ export class AppService {
       {
         label: 'Adsense',
         submenu: [
-          { label: 'Using', apiEndpoint: 'http://localhost:3000/adsense/using' },
+          { label: 'Running', apiEndpoint: 'http://localhost:3000/adsense/running' },
+          { label: 'Ready', apiEndpoint: 'http://localhost:3000/adsense/ready' },
           { label: 'Pantip.com', apiEndpoint: 'http://localhost:3000/adsense/pantip' },
           { label: 'Wordpress', apiEndpoint: 'http://localhost:3000/adsense/wordpress' },
           { label: 'Unused', apiEndpoint: 'http://localhost:3000/adsense/unused' },
