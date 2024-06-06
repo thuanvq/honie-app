@@ -1,8 +1,8 @@
 // adsense.service.ts
 
 import { Injectable } from '@nestjs/common';
-import { ADSENSE_SORT, COUNTRY_CODE, LIST_RESPONSE, READY_PANTIP, READY_WORDPRESS } from '@src/constants';
 import { Collection } from 'mongodb';
+import { ADSENSE_SORT, COUNTRY_CODE, LIST_RESPONSE, READY_PANTIP, READY_WORDPRESS } from '../../constants';
 import { MongoDBService } from '../mongodb/mongodb.service';
 
 @Injectable()
@@ -67,7 +67,8 @@ export class AdsenseService {
 
     const data = await this.gaCollection
       .find(where)
-      .sort({ [ADSENSE_SORT[sortBy || 'email']]: order === 'asc' ? 1 : -1 })
+      .sort({ [ADSENSE_SORT[sortBy || 'email'] || sortBy || 'email']: order === 'asc' ? 1 : -1 })
+      .collation({ locale: 'en_US', numericOrdering: true })
       .project({
         email: 1,
         pid: 1,
@@ -240,7 +241,8 @@ export class AdsenseService {
   async getAdsenseList(where: any, limit: number, skip: number, sortBy: string, order: string) {
     const data = await this.gaCollection
       .find(where)
-      .sort({ [ADSENSE_SORT[sortBy || 'email']]: order === 'asc' ? 1 : -1 })
+      .sort({ [ADSENSE_SORT[sortBy || 'email'] || sortBy || 'email']: order === 'asc' ? 1 : -1 })
+      .collation({ locale: 'en_US', numericOrdering: true })
       .skip(skip || 0)
       .limit(limit || 100)
       .project({

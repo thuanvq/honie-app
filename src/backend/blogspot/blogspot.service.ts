@@ -1,8 +1,8 @@
 // adsense.service.ts
 
 import { Injectable } from '@nestjs/common';
-import { LIST_RESPONSE } from '@src/constants';
 import { Collection } from 'mongodb';
+import { LIST_RESPONSE } from '../../constants';
 import { MongoDBService } from '../mongodb/mongodb.service';
 
 @Injectable()

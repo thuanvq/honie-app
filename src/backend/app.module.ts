@@ -1,5 +1,6 @@
 import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { AdsenseSyncModule } from './adsense-sync/adsense-sync.module';
 import { AdsenseModule } from './adsense/adsense.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -9,7 +10,7 @@ import { MongoDBModule } from './mongodb/mongodb.module';
 import { WebsiteModule } from './website/website.module';
 
 @Module({
-  imports: [AdsenseModule, MongoDBModule, WebsiteModule, BlogspotModule],
+  imports: [AdsenseModule, MongoDBModule, WebsiteModule, BlogspotModule, AdsenseSyncModule],
   controllers: [AppController],
   providers: [
     AppService,
