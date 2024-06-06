@@ -11,7 +11,13 @@
     <script src="./common/list.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', () => {
-        loadCommonListComponent('http://localhost:3000/adsense/pantip');
+        const urlParams = new URLSearchParams(window.location.search);
+        const apiEndpoint = urlParams.get('apiEndpoint');
+        if (apiEndpoint) {
+          loadCommonListComponent(apiEndpoint);
+        } else {
+          console.error('API endpoint not specified');
+        }
       });
     </script>
   </body>

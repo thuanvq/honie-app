@@ -1,18 +1,18 @@
 import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AdsenseModule } from './adsense/adsense.module';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 import { BlogspotModule } from './blogspot/blogspot.module';
 import { LoggingInterceptor } from './logging.interceptor';
 import { MongoDBModule } from './mongodb/mongodb.module';
-import { ViewerController } from './viewer/viewer.controller';
-import { ViewerService } from './viewer/viewer.service';
 import { WebsiteModule } from './website/website.module';
 
 @Module({
   imports: [AdsenseModule, MongoDBModule, WebsiteModule, BlogspotModule],
-  controllers: [ViewerController],
+  controllers: [AppController],
   providers: [
-    ViewerService,
+    AppService,
     {
       provide: APP_INTERCEPTOR,
       useClass: LoggingInterceptor,
