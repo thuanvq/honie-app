@@ -41,19 +41,19 @@ export class AdsenseService {
     ]);
 
     const headers = [
-      { label: 'Email', key: 'email', sortable: true },
-      { label: 'PID', key: 'pid', sortable: true, link: true },
-      { label: 'Limit', key: 'limit', sortable: true, type: 'center' },
-      { label: 'Country', key: 'country', sortable: true, type: 'center' },
-      { label: 'Blogs', key: 'blogCount', sortable: true, type: 'number' },
-      { label: 'Month', key: 'month', sortable: true, type: 'currency' },
-      { label: 'Balance', key: 'balance', sortable: true, type: 'currency' },
-      { label: 'Sites', key: 'sites', sortable: false },
-      { label: 'Error', key: 'error', sortable: false, type: 'center' },
+      ADSENSE_COLUMN.EMAIL,
+      ADSENSE_COLUMN.PID,
+      ADSENSE_COLUMN.LIMIT,
+      ADSENSE_COLUMN.COUNTRY,
+      ADSENSE_COLUMN.BLOG_COUNT,
+      ADSENSE_COLUMN.MONTH,
+      ADSENSE_COLUMN.BALANCE,
+      ADSENSE_COLUMN.SITES,
+      ADSENSE_COLUMN.ERROR,
     ];
     const totalRecords = total?.count;
     const filters = [{ key: 'anything', label: 'Anything', type: 'text' }];
-    return { title: 'Adsense Ready', headers, filters, data, totalRecords, summary: '' };
+    return { title: 'Adsense Error', headers, filters, data, totalRecords, summary: '' };
   }
 
   async getAdsenseUnused(page: string, limit: string, sortBy: string, order: string, anything: string): Promise<LIST_RESPONSE> {
@@ -71,23 +71,23 @@ export class AdsenseService {
     ]);
 
     const headers = [
-      { label: 'Email', key: 'email', sortable: true },
-      { label: 'PID', key: 'pid', sortable: true, link: true },
-      { label: 'Limit', key: 'limit', sortable: true, type: 'center' },
-      { label: 'Country', key: 'country', sortable: true, type: 'center' },
-      { label: 'Action', key: 'action', type: 'on', sortable: false },
-      { label: 'Blogs', key: 'blogCount', sortable: true, type: 'number' },
-      { label: 'RPM', key: 'rpm', sortable: true, type: 'currency' },
-      { label: 'Views', key: 'views', sortable: true, type: 'number' },
-      { label: 'Clicks', key: 'clicks', sortable: true, type: 'number' },
-      { label: 'Today', key: 'today', sortable: true, type: 'currency' },
-      { label: 'Month', key: 'month', sortable: true, type: 'currency' },
-      { label: 'Balance', key: 'balance', sortable: true, type: 'currency' },
-      { label: 'Sites', key: 'sites', sortable: false },
+      ADSENSE_COLUMN.EMAIL,
+      ADSENSE_COLUMN.PID,
+      ADSENSE_COLUMN.LIMIT,
+      ADSENSE_COLUMN.COUNTRY,
+      ADSENSE_COLUMN.ACTION_ON,
+      ADSENSE_COLUMN.BLOG_COUNT,
+      ADSENSE_COLUMN.RPM,
+      ADSENSE_COLUMN.VIEWS,
+      ADSENSE_COLUMN.CLICKS,
+      ADSENSE_COLUMN.TODAY,
+      ADSENSE_COLUMN.MONTH,
+      ADSENSE_COLUMN.BALANCE,
+      ADSENSE_COLUMN.SITES,
     ];
     const totalRecords = total?.count;
     const filters = [{ key: 'anything', label: 'Anything', type: 'text' }];
-    return { title: 'Adsense Ready', headers, filters, data, totalRecords, summary: '' };
+    return { title: 'Adsense Unused', headers, filters, data, totalRecords, summary: '' };
   }
 
   async getAdsenseWordpress(page: string, limit: string, sortBy: string, order: string, anything: string): Promise<LIST_RESPONSE> {
@@ -100,26 +100,26 @@ export class AdsenseService {
     ]);
 
     const headers = [
-      { label: 'Email', key: 'email', sortable: true },
-      { label: 'PID', key: 'pid', sortable: true, link: true },
-      { label: 'Limit', key: 'limit', sortable: true, type: 'center' },
-      { label: 'Country', key: 'country', sortable: true, type: 'center' },
-      { label: 'UTC', key: 'utc', sortable: true, type: 'number' },
-      { label: 'Action', key: 'action', type: 'off', sortable: false },
-      { label: 'Blogs', key: 'blogCount', sortable: true, type: 'number' },
-      { label: 'RPM', key: 'rpm', sortable: true, type: 'currency' },
-      { label: 'Views', key: 'views', sortable: true, type: 'number' },
-      { label: 'Clicks', key: 'clicks', sortable: true, type: 'number' },
-      { label: 'Today', key: 'today', sortable: true, type: 'currency' },
-      { label: 'Yesterday', key: 'yesterday', sortable: true, type: 'currency' },
-      { label: 'Month', key: 'month', sortable: true, type: 'currency' },
-      { label: 'Balance', key: 'balance', sortable: true, type: 'currency' },
-      { label: 'Updated', key: 'updated', sortable: false, type: 'center' },
+      ADSENSE_COLUMN.EMAIL,
+      ADSENSE_COLUMN.PID,
+      ADSENSE_COLUMN.LIMIT,
+      ADSENSE_COLUMN.COUNTRY,
+      ADSENSE_COLUMN.UTC,
+      ADSENSE_COLUMN.ACTION_OFF,
+      ADSENSE_COLUMN.BLOG_COUNT,
+      ADSENSE_COLUMN.RPM,
+      ADSENSE_COLUMN.VIEWS,
+      ADSENSE_COLUMN.CLICKS,
+      ADSENSE_COLUMN.TODAY,
+      ADSENSE_COLUMN.YESTERDAY,
+      ADSENSE_COLUMN.MONTH,
+      ADSENSE_COLUMN.BALANCE,
+      ADSENSE_COLUMN.UPDATED,
     ];
     const totalRecords = total?.count;
     const summary = `today: ${total.today} $, yesterday: ${total.yesterday} $, month: ${total.month} $`;
     const filters = [{ key: 'anything', label: 'Anything', type: 'text' }];
-    return { title: 'Adsense Ready', headers, filters, data, totalRecords, summary };
+    return { title: 'Adsense Wordpress', headers, filters, data, totalRecords, summary };
   }
 
   async getAdsenseUsing(page: string, limit: string, sortBy: string = 'rpm', order: string, anything: string): Promise<LIST_RESPONSE> {
@@ -132,26 +132,26 @@ export class AdsenseService {
     ]);
 
     const headers = [
-      { label: 'Email', key: 'email', sortable: true },
-      { label: 'PID', key: 'pid', sortable: true, link: true },
-      { label: 'Limit', key: 'limit', sortable: true, type: 'center' },
-      { label: 'Country', key: 'country', sortable: true, type: 'center' },
-      { label: 'UTC', key: 'utc', sortable: true, type: 'number' },
-      { label: 'Action', key: 'action', type: 'off', sortable: false },
-      { label: 'Blogs', key: 'blogCount', sortable: true, type: 'number' },
-      { label: 'RPM', key: 'rpm', sortable: true, type: 'currency' },
-      { label: 'Views', key: 'views', sortable: true, type: 'number' },
-      { label: 'Clicks', key: 'clicks', sortable: true, type: 'number' },
-      { label: 'Today', key: 'today', sortable: true, type: 'currency' },
-      { label: 'Yesterday', key: 'yesterday', sortable: true, type: 'currency' },
-      { label: 'Month', key: 'month', sortable: true, type: 'currency' },
-      { label: 'Balance', key: 'balance', sortable: true, type: 'currency' },
-      { label: 'Updated', key: 'updated', sortable: false, type: 'center' },
+      ADSENSE_COLUMN.EMAIL,
+      ADSENSE_COLUMN.PID,
+      ADSENSE_COLUMN.LIMIT,
+      ADSENSE_COLUMN.COUNTRY,
+      ADSENSE_COLUMN.UTC,
+      ADSENSE_COLUMN.ACTION_OFF,
+      ADSENSE_COLUMN.BLOG_COUNT,
+      ADSENSE_COLUMN.RPM,
+      ADSENSE_COLUMN.VIEWS,
+      ADSENSE_COLUMN.CLICKS,
+      ADSENSE_COLUMN.TODAY,
+      ADSENSE_COLUMN.YESTERDAY,
+      ADSENSE_COLUMN.MONTH,
+      ADSENSE_COLUMN.BALANCE,
+      ADSENSE_COLUMN.UPDATED,
     ];
     const totalRecords = total?.count;
     const summary = `today: ${total.today} $, yesterday: ${total.yesterday} $, month: ${total.month} $`;
     const filters = [{ key: 'anything', label: 'Anything', type: 'text' }];
-    return { title: 'Adsense Ready', headers, filters, data, totalRecords, summary };
+    return { title: 'Adsense Using', headers, filters, data, totalRecords, summary };
   }
 
   async getAdsensePantip(page: string, limit: string, sortBy: string = 'rpm', order: string = 'desc', anything: string): Promise<LIST_RESPONSE> {
@@ -164,26 +164,26 @@ export class AdsenseService {
     ]);
 
     const headers = [
-      { label: 'Email', key: 'email', sortable: true },
-      { label: 'PID', key: 'pid', sortable: true, link: true },
-      { label: 'Limit', key: 'limit', sortable: true, type: 'center' },
-      { label: 'Country', key: 'country', sortable: true, type: 'center' },
-      { label: 'UTC', key: 'utc', sortable: true, type: 'number' },
-      { label: 'Action', key: 'action', type: 'off', sortable: false },
-      { label: 'Blogs', key: 'blogCount', sortable: true, type: 'number' },
-      { label: 'RPM', key: 'rpm', sortable: true, type: 'currency' },
-      { label: 'Views', key: 'views', sortable: true, type: 'number' },
-      { label: 'Clicks', key: 'clicks', sortable: true, type: 'number' },
-      { label: 'Today', key: 'today', sortable: true, type: 'currency' },
-      { label: 'Yesterday', key: 'yesterday', sortable: true, type: 'currency' },
-      { label: 'Month', key: 'month', sortable: true, type: 'currency' },
-      { label: 'Balance', key: 'balance', sortable: true, type: 'currency' },
-      { label: 'Updated', key: 'updated', sortable: false, type: 'center' },
+      ADSENSE_COLUMN.EMAIL,
+      ADSENSE_COLUMN.PID,
+      ADSENSE_COLUMN.LIMIT,
+      ADSENSE_COLUMN.COUNTRY,
+      ADSENSE_COLUMN.UTC,
+      ADSENSE_COLUMN.ACTION_OFF,
+      ADSENSE_COLUMN.BLOG_COUNT,
+      ADSENSE_COLUMN.RPM,
+      ADSENSE_COLUMN.VIEWS,
+      ADSENSE_COLUMN.CLICKS,
+      ADSENSE_COLUMN.TODAY,
+      ADSENSE_COLUMN.YESTERDAY,
+      ADSENSE_COLUMN.MONTH,
+      ADSENSE_COLUMN.BALANCE,
+      ADSENSE_COLUMN.UPDATED,
     ];
     const totalRecords = total?.count;
     const summary = `today: ${total.today} $, yesterday: ${total.yesterday} $, month: ${total.month} $`;
     const filters = [{ key: 'anything', label: 'Anything', type: 'text' }];
-    return { title: 'Adsense Ready', headers, filters, data, totalRecords, summary };
+    return { title: 'Adsense Pantip', headers, filters, data, totalRecords, summary };
   }
 
   async getAdsenseList(where: any, limit: number, skip: number, sortBy: string, order: string) {
@@ -192,6 +192,19 @@ export class AdsenseService {
       .sort({ [ADSENSE_SORT[sortBy || 'email']]: order === 'asc' ? 1 : -1 })
       .skip(skip || 0)
       .limit(limit || 100)
+      .project({
+        email: 1,
+        pid: 1,
+        error: 1,
+        balance: 1,
+        blogCount: 1,
+        needBlog: 1,
+        information: 1,
+        sites: 1,
+        todayReport: 1,
+        yesterdayReport: { estimatedEarning: 1 },
+        monthReport: { estimatedEarning: 1 },
+      })
       .toArray();
     return data.map((d) => ({
       ...d,
@@ -232,42 +245,24 @@ export class AdsenseService {
       .toArray();
     return result[0];
   }
-
-  async getWebsites(status: string, wordpress: string, name: string) {
-    const adsenseData = await this.gaCollection.find({ error: null, 'sites.status': status }).toArray();
-    const data = [];
-
-    adsenseData.forEach((ga) => {
-      ga.sites.forEach((site) => {
-        if (
-          site.status === status &&
-          (!wordpress || !/html5gameportal.com|minigame.vip|pantip.com/.test(site.name)) &&
-          (!name || new RegExp(name).test(site.name))
-        ) {
-          data.push(site);
-        }
-      });
-    });
-    const headers = [
-      { label: 'Email', key: 'email', sortable: true },
-      { label: 'PID', key: 'pid', sortable: true, link: true },
-      { label: 'Limit', key: 'limit', sortable: true, type: 'center' },
-      { label: 'Country', key: 'country', sortable: true, type: 'center' },
-      { label: 'Action', key: 'action', type: 'off', sortable: false },
-      { label: 'Blogs', key: 'blogCount', sortable: true, type: 'number' },
-      { label: 'RPM', key: 'rpm', sortable: true, type: 'currency' },
-      { label: 'Views', key: 'views', sortable: true, type: 'number' },
-      { label: 'Clicks', key: 'clicks', sortable: true, type: 'number' },
-      { label: 'Today', key: 'today', sortable: true, type: 'currency' },
-      { label: 'Month', key: 'month', sortable: true, type: 'currency' },
-      { label: 'Balance', key: 'balance', sortable: true, type: 'currency' },
-      { label: 'Sites', key: 'sites', sortable: false },
-    ];
-    const totalRecords = data.length;
-    const filters = [
-      { key: 'name', label: 'Site', type: 'text' },
-      { key: 'wordpress', label: 'Wordpress', type: 'checkbox' },
-    ];
-    return { title: 'Adsense Ready', headers, filters, data, totalRecords, summary: '' };
-  }
 }
+const ADSENSE_COLUMN = {
+  EMAIL: { label: 'Email', key: 'email', sortable: true },
+  PID: { label: 'PID', key: 'pid', sortable: true, link: true },
+  LIMIT: { label: 'Limit', key: 'limit', sortable: true, type: 'center' },
+  COUNTRY: { label: 'Country', key: 'country', sortable: true, type: 'center' },
+  UTC: { label: 'UTC', key: 'utc', sortable: true, type: 'number' },
+  ACTION_OFF: { label: 'Action', key: 'action', type: 'off', sortable: false },
+  ACTION_ON: { label: 'Action', key: 'action', type: 'on', sortable: false },
+  BLOG_COUNT: { label: 'Blogs', key: 'blogCount', sortable: true, type: 'number' },
+  RPM: { label: 'RPM', key: 'rpm', sortable: true, type: 'currency' },
+  VIEWS: { label: 'Views', key: 'views', sortable: true, type: 'number' },
+  CLICKS: { label: 'Clicks', key: 'clicks', sortable: true, type: 'number' },
+  TODAY: { label: 'Today', key: 'today', sortable: true, type: 'currency' },
+  YESTERDAY: { label: 'Yesterday', key: 'yesterday', sortable: true, type: 'currency' },
+  MONTH: { label: 'Month', key: 'month', sortable: true, type: 'currency' },
+  BALANCE: { label: 'Balance', key: 'balance', sortable: true, type: 'currency' },
+  UPDATED: { label: 'Updated', key: 'updated', sortable: false, type: 'center' },
+  SITES: { label: 'Sites', key: 'sites', sortable: false },
+  ERROR: { label: 'Error', key: 'error', sortable: false, type: 'center' },
+};

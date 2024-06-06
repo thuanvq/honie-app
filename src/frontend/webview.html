@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Web View</title>
+    <style>
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+      .address-bar {
+        display: flex;
+        margin: 10px;
+        background-color: #f1f1f1;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 5px;
+        align-items: center;
+      }
+      .address-bar input {
+        flex-grow: 1;
+        padding: 10px;
+        font-size: 16px;
+        border: none;
+        border-radius: 5px;
+        outline: none;
+      }
+      .address-bar button {
+        padding: 10px 15px;
+        font-size: 16px;
+        border: none;
+        border-radius: 5px;
+        background-color: #0078d7;
+        color: white;
+        cursor: pointer;
+        margin-left: 10px;
+      }
+      .address-bar button:hover {
+        background-color: #005a9e;
+      }
+      webview {
+        flex-grow: 1;
+        border: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="address-bar">
+      <input type="text" id="address-bar" placeholder="Enter URL here" />
+      <button id="go-button">Go</button>
+    </div>
+    <webview id="webview" src="" style="flex-grow: 1"></webview>
+    <script>
+      const { ipcRenderer } = require('electron');
+
+      ipcRenderer.on('load-url', (event, siteUrl) => {
+        document.getElementById('address-bar').value = siteUrl;
+        document.getElementById('webview').src = siteUrl;
+      });
+
+      document.getElementById('go-button').addEventListener('click', () => {
+        const url = document.getElementById('address-bar').value;
+        document.getElementById('webview').src = url;
+      });
+
+      document.getElementById('address-bar').addEventListener('keyup', (event) => {
+        if (event.key === 'Enter') {
+          const url = event.target.value;
+          document.getElementById('webview').src = url;
+        }
+      });
+
+      const webview = document.getElementById('webview');
+
+      webview.addEventListener('did-navigate', (event) => {
+        document.getElementById('address-bar').value = event.url;
+      });
+
+      webview.addEventListener('did-navigate-in-page', (event) => {
+        document.getElementById('address-bar').value = event.url;
+      });
+
+      webview.addEventListener('dom-ready', () => {
+        document.getElementById('address-bar').value = webview.getURL();
+      });
+
+      // Use a mutation observer to detect URL changes within the webview
+      const observer = new MutationObserver(() => {
+        document.getElementById('address-bar').value = webview.getURL();
+      });
+
+      observer.observe(webview, { attributes: true, attributeFilter: ['src'] });
+    </script>
+  </body>
+</html>

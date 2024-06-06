@@ -29,7 +29,7 @@ export class AdsenseController {
     return this.adsenseService.getAdsensePantip(page, limit, sortBy, order, anything);
   }
 
-  @Get('errors')
+  @Get('error')
   async getAdsenseError(
     @Query('page') page: string,
     @Query('rowsPerPage') limit: string,
@@ -65,11 +65,6 @@ export class AdsenseController {
   @Get('detail')
   getAdsenseDetail(@Query('pid') pid: string) {
     return this.adsenseService.getAdsenseDetail(pid);
-  }
-
-  @Get('websites')
-  async getWebsites(@Query('status') status: string, @Query('wordpress') wordpress: string, @Query('name') name: string) {
-    return this.adsenseService.getWebsites(status, wordpress, name);
   }
 
   @Post(['wordpress', 'unused'])

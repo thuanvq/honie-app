@@ -104,6 +104,8 @@ if (typeof CommonListComponent === 'undefined') {
           let cellValue = item[header.key] || '';
           if (header.key === 'pid' && cellValue) {
             cellValue = `<a href="#" onclick="openDetail('${item.pid}')">${item.pid}</a>`;
+          } else if (header.key === 'website' && cellValue) {
+            cellValue = `<a href="#" onclick="openWebView('${item.website}')">${item.website}</a>`;
           } else if (header.key === 'action') {
             this.doneIcon = `./assets/${header.type ? header.type + '-' : ''}done-icon.svg`;
             const runIcon = `./assets/${header.type ? header.type + '-' : ''}run-icon.svg`;
@@ -251,6 +253,9 @@ if (typeof CommonListComponent === 'undefined') {
   }
   window.openDetail = function (pid) {
     ipcRenderer.send('open-detail-window', pid);
+  };
+  window.openWebView = function (website) {
+    ipcRenderer.send('open-webview', `https://${website}`);
   };
 }
 

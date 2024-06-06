@@ -67,19 +67,45 @@ ipcMain.on('open-detail-window', (event, pid) => {
   createDetailWindow(pid);
 });
 
+function createWebViewWindow(siteUrl) {
+  let webViewWindow = new BrowserWindow({
+    width: 1600,
+    height: 1200,
+    webPreferences: {
+      // preload: path.join(__dirname, 'preload.js'), // Use preload script
+      nodeIntegration: true,
+      contextIsolation: true, // Enable context isolation
+      webviewTag: true,
+    },
+  });
+
+  const webViewUrl = url.format({
+    pathname: path.join(__dirname, '..', 'src', 'frontend', 'webview.html'),
+    protocol: 'file:',
+    slashes: true,
+  });
+
+  webViewWindow.loadURL(webViewUrl);
+  webViewWindow.webContents.openDevTools();
+
+  webViewWindow.webContents.on('did-finish-load', () => {
+    webViewWindow.webContents.send('load-url', siteUrl);
+  });
+
+  webViewWindow.on('closed', () => {
+    webViewWindow = null;
+  });
+}
+
+ipcMain.on('open-webview', (event, siteUrl) => {
+  createWebViewWindow(siteUrl);
+});
+
 app.on('ready', () => {
   setTimeout(() => createWindow(), 2000);
 
   // Register global shortcuts
   const registerShortcuts = () => {
-    globalShortcut.register('F12', () => {
-      if (mainWindow && mainWindow.webContents.isDevToolsOpened()) {
-        mainWindow.webContents.closeDevTools();
-      } else if (mainWindow) {
-        mainWindow.webContents.openDevTools();
-      }
-    });
-
     globalShortcut.register('Ctrl+Shift+I', () => {
       if (mainWindow && mainWindow.webContents.isDevToolsOpened()) {
         mainWindow.webContents.closeDevTools();
@@ -176,7 +202,7 @@ app.on('ready', () => {
           click: () => {
             mainWindow?.loadURL(
               url.format({
-                pathname: path.join(__dirname, '..', 'src', 'frontend', 'websites', 'websites.html'),
+                pathname: path.join(__dirname, '..', 'src', 'frontend', 'website-ready.html'),
                 protocol: 'file:',
                 slashes: true,
                 search: `?status=Ready`,
@@ -189,7 +215,7 @@ app.on('ready', () => {
           click: () => {
             mainWindow?.loadURL(
               url.format({
-                pathname: path.join(__dirname, '..', 'src', 'frontend', 'websites', 'websites.html'),
+                pathname: path.join(__dirname, '..', 'src', 'frontend', 'website-getting.html'),
                 protocol: 'file:',
                 slashes: true,
                 search: `?status=Getting ready`,
@@ -202,7 +228,7 @@ app.on('ready', () => {
           click: () => {
             mainWindow?.loadURL(
               url.format({
-                pathname: path.join(__dirname, '..', 'src', 'frontend', 'websites', 'websites.html'),
+                pathname: path.join(__dirname, '..', 'src', 'frontend', 'website-attention.html'),
                 protocol: 'file:',
                 slashes: true,
                 search: `?status=Needs attention`,
@@ -215,10 +241,54 @@ app.on('ready', () => {
           click: () => {
             mainWindow?.loadURL(
               url.format({
-                pathname: path.join(__dirname, '..', 'src', 'frontend', 'websites', 'websites.html'),
+                pathname: path.join(__dirname, '..', 'src', 'frontend', 'website-review.html'),
                 protocol: 'file:',
                 slashes: true,
                 search: `?status=Requires review`,
+              }),
+            );
+          },
+        },
+      ],
+    },
+    {
+      label: 'Blogspot',
+      submenu: [
+        {
+          label: 'Using',
+          click: () => {
+            mainWindow?.loadURL(
+              url.format({
+                pathname: path.join(__dirname, '..', 'src', 'frontend', 'blogspot-using.html'),
+                protocol: 'file:',
+                slashes: true,
+                search: `?status=Ready`,
+              }),
+            );
+          },
+        },
+        {
+          label: 'TEMP',
+          click: () => {
+            mainWindow?.loadURL(
+              url.format({
+                pathname: path.join(__dirname, '..', 'src', 'frontend', 'blogspot-temp.html'),
+                protocol: 'file:',
+                slashes: true,
+                search: `?status=Getting ready`,
+              }),
+            );
+          },
+        },
+        {
+          label: 'Unused',
+          click: () => {
+            mainWindow?.loadURL(
+              url.format({
+                pathname: path.join(__dirname, '..', 'src', 'frontend', 'blogspot-unused.html'),
+                protocol: 'file:',
+                slashes: true,
+                search: `?status=Needs attention`,
               }),
             );
           },
