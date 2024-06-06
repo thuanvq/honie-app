@@ -17,9 +17,17 @@ export class AppService {
         label: 'Website',
         submenu: [
           { label: 'Ready', apiEndpoint: 'http://localhost:3000/website/ready' },
-          { label: 'Getting ready', apiEndpoint: 'http://localhost:3000/website/getting' },
-          { label: 'Requires review', apiEndpoint: 'http://localhost:3000/website/review' },
-          { label: 'Needs attention', apiEndpoint: 'http://localhost:3000/website/attention' },
+          { label: 'Getting ready', apiEndpoint: 'http://localhost:3000/website/getting-ready' },
+          { label: 'Requires review', apiEndpoint: 'http://localhost:3000/website/requires-review' },
+          { label: 'Needs attention', apiEndpoint: 'http://localhost:3000/website/needs-attention' },
+        ],
+      },
+      {
+        label: 'Blogspot',
+        submenu: [
+          { label: 'Using', apiEndpoint: 'http://localhost:3000/blogspot/using' },
+          { label: 'TEMP', apiEndpoint: 'http://localhost:3000/blogspot/temp' },
+          { label: 'Unused', apiEndpoint: 'http://localhost:3000/blogspot/unused' },
         ],
       },
     ];

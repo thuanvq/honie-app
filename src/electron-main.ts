@@ -21,7 +21,7 @@ async function createMenu() {
         click: () => {
           mainWindow?.loadURL(
             url.format({
-              pathname: path.join(__dirname, '..', 'src', 'frontend', 'common', 'list.html'),
+              pathname: path.join(__dirname, '..', 'src', 'frontend', 'list.html'),
               protocol: 'file:',
               slashes: true,
               search: `?apiEndpoint=${encodeURIComponent(submenu.apiEndpoint)}`,
@@ -70,7 +70,7 @@ async function createWindow() {
   });
 
   const startUrl = url.format({
-    pathname: path.join(__dirname, '..', 'src', 'frontend', 'adsense-using.html'),
+    pathname: path.join(__dirname, '..', 'src', 'frontend', 'query.html'),
     protocol: 'file:',
     slashes: true,
   });
@@ -149,11 +149,21 @@ ipcMain.on('open-webview', (event, siteUrl) => {
   createWebViewWindow(siteUrl);
 });
 
-app.on('ready', () => {
-  setTimeout(() => {
-    createWindow();
-    createMenu().catch((error) => console.error('Failed to create menu:', error));
-  }, 5000);
+async function waitForBackend() {
+  while (true) {
+    try {
+      await axios.get('http://localhost:3000/app/health-check');
+      break;
+    } catch (error) {
+      console.log('Waiting for backend to be ready...');
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+  }
+}
+app.on('ready', async () => {
+  await waitForBackend();
+  createWindow();
+  createMenu().catch((error) => console.error('Failed to create menu:', error));
 });
 
 app.on('window-all-closed', () => {

@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Common List</title>
-    <link rel="stylesheet" href="./common/list.css" />
+    <link rel="stylesheet" href="list.css" />
   </head>
   <body>
     <div class="header-container">
@@ -32,5 +32,16 @@
       <button id="nextPageBottom">Next</button>
     </div>
     <script src="list.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const apiEndpoint = urlParams.get('apiEndpoint');
+        if (apiEndpoint) {
+          loadCommonListComponent(apiEndpoint);
+        } else {
+          console.error('API endpoint not specified');
+        }
+      });
+    </script>
   </body>
 </html>

@@ -236,18 +236,19 @@ if (typeof CommonListComponent === 'undefined') {
   }
 
   function loadCommonListComponent(apiEndpoint) {
-    fetch('./common/list.html')
-      .then((response) => response.text())
-      .then((html) => {
-        document.getElementById('component-root').innerHTML = html;
-        const script = document.createElement('script');
-        script.src = './common/list.js';
-        document.body.appendChild(script);
-        script.onload = () => {
-          new CommonListComponent({ apiEndpoint });
-        };
-      })
-      .catch((error) => console.error('Error loading common list:', error));
+    // fetch('list.html')
+    //   .then((response) => response.text())
+    //   .then((html) => {
+    //     document.getElementById('component-root').innerHTML = html;
+    //     const script = document.createElement('script');
+    //     script.src = 'list.js';
+    //     document.body.appendChild(script);
+    //     script.onload = () => {
+    //       new CommonListComponent({ apiEndpoint });
+    //     };
+    //   })
+    //   .catch((error) => console.error('Error loading common list:', error));
+    new CommonListComponent({ apiEndpoint });
   }
   window.openDetail = function (pid) {
     window.electron.ipcRenderer.send('open-detail-window', pid);
