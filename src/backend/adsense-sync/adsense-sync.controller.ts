@@ -1,23 +1,23 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Post, Query } from '@nestjs/common';
 import { AdsenseService } from './adsense-sync.service';
 
 @Controller('adsense-sync')
 export class AdsenseSyncController {
   constructor(private readonly adsenseService: AdsenseService) {}
 
-  @Get('refetch-sites')
+  @Post('refetch-sites')
   syncSite(@Query('pid') pid: string) {
     return this.adsenseService.syncSite(pid);
   }
-  @Get('refetch-today')
+  @Post('refetch-today')
   syncToday(@Query('pid') pid: string) {
     return this.adsenseService.syncToday(pid);
   }
-  @Get('refetch-month')
+  @Post('refetch-month')
   syncMonth(@Query('pid') pid: string) {
     return this.adsenseService.syncMonth(pid);
   }
-  @Get('all')
+  @Post('all')
   syncAll(@Query('pid') pid: string) {
     return this.adsenseService.syncAll(pid);
   }

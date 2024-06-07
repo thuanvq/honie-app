@@ -1,6 +1,6 @@
 // adsense.controller.ts
 
-import { Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { AdsenseService } from './adsense.service';
 
 @Controller('adsense')
@@ -85,5 +85,9 @@ export class AdsenseController {
   @Post(['ready', 'pantip', 'running'])
   async stopBlogspot(@Query('pid') pid: string) {
     return this.adsenseService.stopBlogspot(pid);
+  }
+  @Post('error')
+  async setAdsenseError(@Query('pid') pid: string, @Body('message') message: string) {
+    return this.adsenseService.setAdsenseError(pid, message);
   }
 }

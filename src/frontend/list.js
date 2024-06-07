@@ -7,6 +7,7 @@ if (typeof CommonListComponent === 'undefined') {
       this.rowsPerPage = 100;
       this.currentSort = { column: '', order: '' };
       this.debounceTimer = null;
+      this.primary = '';
       this.init();
     }
 
@@ -72,7 +73,8 @@ if (typeof CommonListComponent === 'undefined') {
 
       try {
         const response = await fetch(`${this.config.apiEndpoint}?${query.toString()}`);
-        const { headers, data, filters, title, totalRecords, summary } = await response.json();
+        const { headers, data, filters, title, totalRecords, summary, primary } = await response.json();
+        this.primary = primary || 'pid';
         if (!init) {
           document.title = title;
           document.getElementById('list-title').innerText = title;
@@ -108,7 +110,7 @@ if (typeof CommonListComponent === 'undefined') {
             this.doneIcon = `./assets/${header.type ? header.type + '-' : ''}done-icon.svg`;
             const runIcon = `./assets/${header.type ? header.type + '-' : ''}run-icon.svg`;
             if (item[header.type]) {
-              cellValue = `<img src="${runIcon}" class="small-icon clickable" data-pid="${item.pid}">`;
+              cellValue = `<img src="${runIcon}" class="small-icon clickable" data-primary="${item[this.primary]}">`;
             }
             tdClass = 'align-center';
           } else if (header.type === 'currency') {
@@ -129,9 +131,9 @@ if (typeof CommonListComponent === 'undefined') {
 
       document.querySelectorAll('.clickable').forEach((icon) => {
         icon.addEventListener('click', async (event) => {
-          const pid = event.target.getAttribute('data-pid');
+          const value = event.target.getAttribute('data-primary');
           try {
-            const response = await fetch(`${this.config.apiEndpoint}?pid=${pid}`, { method: 'POST' });
+            const response = await fetch(`${this.config.apiEndpoint}?${this.primary}=${value}`, { method: 'POST' });
             if (response.status === 201) {
               event.target.src = this.doneIcon;
               event.target.classList.remove('clickable');
@@ -243,5 +245,5 @@ function formatCurrency(value) {
 }
 
 function formatNumber(value) {
-  return value ? value.toLocaleString() : '';
+  return value !== undefined && value !== null ? value.toLocaleString() : '';
 }

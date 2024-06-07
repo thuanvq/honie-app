@@ -32,7 +32,7 @@ export class AdSenseUtils {
       return { sites };
     } catch (e) {
       console.log('❌', new Date(), email, e.response?.status);
-      return null;
+      return { error: e };
     }
   }
 
@@ -94,7 +94,7 @@ export class AdSenseUtils {
       return { todayReport, siteReport };
     } catch (e) {
       console.log('❌', new Date(), email, e.response?.status);
-      return null;
+      return { error: e };
     }
   }
 
@@ -158,7 +158,7 @@ export class AdSenseUtils {
       return { monthReport, report, yesterdayReport };
     } catch (e) {
       console.log('❌', new Date(), email, e);
-      return null;
+      return { error: e };
     }
   }
 

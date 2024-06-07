@@ -43,48 +43,63 @@ export class AdsenseService {
   }
 
   async syncSite(pid: string) {
-    const functionName = 'syncAll';
+    const functionName = 'syncSite';
     console.log('🟢', new Date(), functionName, '----> STARTED');
 
     const ga = await this.googleAdsenseCollection.findOne({ pid });
     const { _id, email, cookies, ablToken, aboToken, utc } = ga;
+    if (!cookies || !aboToken || !ablToken) {
+      return { message: 'COOKIE NOT FOUND' };
+    }
 
     const syncSites = await AdSenseUtils.fetchSites(email, cookies, ablToken, pid);
-    await this.googleAdsenseCollection.updateOne({ _id }, { $set: syncSites });
-    await Promise.all(
-      syncSites.sites.map((site) => this.sitesApplyCollection.updateOne({ name: site.name }, { $set: { ...site, email, pid } }, { upsert: true })),
-    );
-
-    console.log('🔴', new Date(), functionName, '----> COMPLETED');
-    return syncSites.sites;
+    const { sites, error } = syncSites;
+    if (sites) {
+      await this.googleAdsenseCollection.updateOne({ _id }, { $set: syncSites });
+      await Promise.all(
+        syncSites.sites.map((site) => this.sitesApplyCollection.updateOne({ name: site.name }, { $set: { ...site, email, pid } }, { upsert: true })),
+      );
+      return sites;
+    }
+    return error;
   }
 
   async syncToday(pid: string) {
-    const functionName = 'syncAll';
+    const functionName = 'syncToday';
     console.log('🟢', new Date(), functionName, '----> STARTED');
 
     const ga = await this.googleAdsenseCollection.findOne({ pid });
     const { _id, email, cookies, ablToken, aboToken, utc } = ga;
+    if (!cookies || !aboToken || !ablToken) {
+      return { message: 'COOKIE NOT FOUND' };
+    }
 
     const syncToday = await AdSenseUtils.fetchTodayReport(email, cookies, aboToken, pid);
-    await this.googleAdsenseCollection.updateOne({ _id }, { $set: syncToday });
-
-    console.log('🔴', new Date(), functionName, '----> COMPLETED');
-    return syncToday.siteReport;
+    const { todayReport, siteReport, error } = syncToday;
+    if (!error) {
+      await this.googleAdsenseCollection.updateOne({ _id }, { $set: syncToday });
+      return siteReport;
+    }
+    return error;
   }
 
   async syncMonth(pid: string) {
-    const functionName = 'syncAll';
+    const functionName = 'syncMonth';
     console.log('🟢', new Date(), functionName, '----> STARTED');
 
     const ga = await this.googleAdsenseCollection.findOne({ pid });
     const { _id, email, cookies, ablToken, aboToken, utc } = ga;
+    if (!cookies || !aboToken || !ablToken) {
+      return { message: 'COOKIE NOT FOUND' };
+    }
 
     const syncMonth = await AdSenseUtils.fetchReportMonth(email, cookies, aboToken, utc, pid);
-    await this.googleAdsenseCollection.updateOne({ _id }, { $set: syncMonth });
-
-    console.log('🔴', new Date(), functionName, '----> COMPLETED');
-    return syncMonth.report;
+    const { monthReport, report, yesterdayReport, error } = syncMonth;
+    if (!error) {
+      await this.googleAdsenseCollection.updateOne({ _id }, { $set: syncMonth });
+      return report;
+    }
+    return error;
   }
 
   // async syncSites() {

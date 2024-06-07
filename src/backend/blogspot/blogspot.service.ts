@@ -13,6 +13,10 @@ export class BlogspotService {
     this.gaCollection = this.mongodbService.getCollection('google_adsense');
     this.blogspotCollection = this.mongodbService.getCollection('sites_blog');
   }
+  async turnOffBlog(website: string) {
+    await this.blogspotCollection.updateOne({ website }, { $unset: { pantip: '', pid: '' } });
+    return true;
+  }
   async getBlogspotsUsing(page: string, limit: string, sortBy: string = 'rpm', order: string = 'desc', website: string): Promise<LIST_RESPONSE> {
     const where: Record<string, any> = { pid: /pub-/ };
     if (website) where.website = new RegExp(website, 'i');
@@ -22,9 +26,11 @@ export class BlogspotService {
       this.summaryBlogspot(where),
     ]);
 
+    const headers = [...BLOGSPOT_HEADERS, { label: 'Action', key: 'action', type: 'off', sortable: false }];
+
     const totalRecords = total?.count;
     const filters = [{ key: 'website', label: 'Website', type: 'text' }];
-    return { title: `Blogspot Using`, headers: BLOGSPOT_HEADERS, filters, data, totalRecords, summary: '' };
+    return { title: `Blogspot Using`, headers, filters, data, totalRecords, primary: 'website' };
   }
   async getBlogspotsTemp(page: string, limit: string, sortBy: string = 'rpm', order: string = 'desc', website: string): Promise<LIST_RESPONSE> {
     const where: Record<string, any> = { pid: 'TEMP' };
@@ -57,9 +63,10 @@ export class BlogspotService {
     const data = await this.blogspotCollection
       .find(where)
       .sort({ [sortBy || 'email']: order === 'asc' ? 1 : -1 })
+      .collation({ locale: 'en_US', numericOrdering: true })
       .skip(skip || 0)
       .limit(limit || 100)
-      .project({ email: 1, pid: 1, website: 1, pantip: 1, posts: { $size: '$urls' } })
+      .project({ email: 1, pid: 1, website: 1, pantip: 1, posts: { $size: '$urls' }, off: 'true' })
       .toArray();
     return data;
   }

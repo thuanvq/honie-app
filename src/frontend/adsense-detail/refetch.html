@@ -37,6 +37,28 @@
       .buttons button:hover {
         background-color: #0056b3;
       }
+      .error-area {
+        margin-top: 20px;
+      }
+      .error-area input {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+      }
+      .error-area button {
+        padding: 10px 20px;
+        font-size: 14px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        background-color: #dc3545;
+        color: white;
+      }
+      .error-area button:hover {
+        background-color: #c82333;
+      }
     </style>
   </head>
   <body>
@@ -50,6 +72,10 @@
         <button id="refetch-all">Refetch All</button>
       </div>
       <div id="result-area" class="result-area"></div>
+      <div id="error-area" class="error-area" style="display: none">
+        <input type="text" id="error-message" placeholder="Enter error message" />
+        <button id="send-error">ERROR</button>
+      </div>
     </div>
     <script src="./common/list.js"></script>
     <script>
@@ -57,6 +83,9 @@
       document.getElementById('pid').textContent = pid;
 
       const resultArea = document.getElementById('result-area');
+      const errorArea = document.getElementById('error-area');
+      const errorMessageInput = document.getElementById('error-message');
+      const errorButton = document.getElementById('send-error');
       const buttons = document.querySelectorAll('.buttons button');
 
       buttons.forEach((button) => {
@@ -73,7 +102,7 @@
 
           try {
             const response = await fetch(`${apiUrl}?pid=${pid}`, {
-              method: 'GET',
+              method: 'POST',
               headers: { 'Content-Type': 'application/json' },
             });
             const data = await response.json();
@@ -84,25 +113,47 @@
         });
       });
 
-      function formatTable(data) {
-        if (!Array.isArray(data) || data.length === 0) return '<div class="error">No data available</div>';
-
-        const headers = Object.keys(data[0]);
-        let table = '<table border="1" cellspacing="0" cellpadding="5"><thead><tr>';
-        table += `<th></th>`;
-        headers.forEach((header) => {
-          table += `<th>${header}</th>`;
-        });
-        table += '</tr></thead><tbody>';
-        data.forEach((row, index) => {
-          table += `<tr><td>${index}</td>`;
-          headers.forEach((header) => {
-            table += `<td>${row[header]}</td>`;
+      errorButton.addEventListener('click', async () => {
+        const errorMessage = errorMessageInput.value;
+        try {
+          await fetch(`http://localhost:3000/adsense/error?pid=${pid}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: errorMessage }),
           });
-          table += '</tr>';
-        });
-        table += '</tbody></table>';
-        return table;
+          alert('Error message sent successfully');
+        } catch (error) {
+          alert(`Failed to send error message: ${error.message}`);
+        }
+      });
+
+      function formatTable(data) {
+        if (Array.isArray(data)) {
+          if (data.length === 0) return '<div class="error">No data available</div>';
+
+          const headers = Object.keys(data[0]);
+          let table = '<table border="1" cellspacing="0" cellpadding="5"><thead><tr>';
+          table += `<th></th>`;
+          headers.forEach((header) => {
+            table += `<th>${header}</th>`;
+          });
+          table += '</tr></thead><tbody>';
+          data.forEach((row, index) => {
+            table += `<tr><td>${index}</td>`;
+            headers.forEach((header) => {
+              table += `<td>${row[header]}</td>`;
+            });
+            table += '</tr>';
+          });
+          table += '</tbody></table>';
+          return table;
+        } else if (typeof data === 'object') {
+          errorArea.style.display = 'block';
+          return `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        } else {
+          errorArea.style.display = 'block';
+          return `<pre>${data}</pre>`;
+        }
       }
     </script>
   </body>

@@ -31,6 +31,17 @@ export class AdsenseService {
     return this.gaCollection.findOne({ $or: [{ pid: new RegExp(input, 'i') }, { email: new RegExp(input, 'i') }] });
   }
 
+  async setAdsenseError(pid: string, error: string): Promise<any> {
+    if (error) {
+      return this.gaCollection.updateOne({ pid }, { $set: { error } });
+    } else {
+      return this.gaCollection.updateOne(
+        { pid },
+        { $unset: { cookies: '', ablToken: '', aboToken: '', yesterdayReport: '', todayReport: '', report: '' } },
+      );
+    }
+  }
+
   async getAdsenseError(page: string, limit: string, sortBy: string, order: string, anything: string): Promise<LIST_RESPONSE> {
     const where: Record<string, any> = { error: { $ne: null }, deletedAt: null };
     if (anything) where.$or = [{ email: new RegExp(anything, 'i') }, { pid: new RegExp(anything, 'i') }];

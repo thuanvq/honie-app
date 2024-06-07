@@ -13,9 +13,10 @@ export type LIST_RESPONSE = {
   title: string;
   headers: any[];
   data: any[];
-  filters: any[];
+  filters?: any[];
   totalRecords: number;
-  summary: string;
+  summary?: string;
+  primary?: string;
 };
 
 export const ADSENSE_SORT = {

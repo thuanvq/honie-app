@@ -1,6 +1,6 @@
 // adsense.controller.ts
 
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Post, Query } from '@nestjs/common';
 import { BlogspotService } from './blogspot.service';
 
 @Controller('blogspot')
@@ -38,5 +38,9 @@ export class BlogspotController {
     @Query('website') website: string,
   ) {
     return this.adsenseService.getBlogspotsUnused(page, limit, sortBy, order, website);
+  }
+  @Post('using')
+  async turnOffBlog(@Query('website') website: string) {
+    return this.adsenseService.turnOffBlog(website);
   }
 }

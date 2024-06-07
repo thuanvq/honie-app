@@ -24,7 +24,7 @@ export class WebsiteService {
   ): Promise<LIST_RESPONSE> {
     const where: Record<string, any> = { status };
     if (name) where.name = new RegExp(name, 'i');
-    if (wordpress) where.sites = { $elemMatch: { name: { $not: /pantip.com|minigame.vip|html5gameportal.com/ }, status: 'Ready' } };
+    if (wordpress) where.name = { $not: /pantip.com|minigame.vip|html5gameportal.com/ };
 
     let [data, total] = await Promise.all([
       this.getSitesApplyList(where, Number(limit), (Number(page) - 1) * Number(limit), sortBy, order),
@@ -50,6 +50,7 @@ export class WebsiteService {
     const data = await this.sitesApplyCollection
       .find(where)
       .sort({ [sortBy || 'email']: order === 'asc' ? 1 : -1 })
+      .collation({ locale: 'en_US', numericOrdering: true })
       .skip(skip || 0)
       .limit(limit || 100)
       .toArray();
