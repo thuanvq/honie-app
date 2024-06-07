@@ -58,6 +58,10 @@ async function createMenu() {
             }
           },
         },
+        {
+          label: 'Fetch Adsense Information',
+          click: () => createRefetchWindow(''),
+        },
       ],
     });
 
@@ -126,6 +130,35 @@ function createDetailWindow(pid: string) {
 
 ipcMain.on('open-detail-window', (event, pid) => {
   createDetailWindow(pid);
+});
+
+function createFormWindow(key: string) {
+  let formWindow: BrowserWindow | null = new BrowserWindow({
+    width: 800,
+    height: 600,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false,
+      contextIsolation: true,
+    },
+  });
+
+  const detailUrl = url.format({
+    pathname: path.join(__dirname, '..', 'src', 'frontend', 'form.html'),
+    protocol: 'file:',
+    slashes: true,
+    search: `?key=${key}`,
+  });
+
+  formWindow.loadURL(detailUrl);
+
+  formWindow.on('closed', () => {
+    formWindow = null;
+  });
+}
+
+ipcMain.on('open-form', (event, key) => {
+  createFormWindow(key);
 });
 
 function createRefetchWindow(pid: string) {

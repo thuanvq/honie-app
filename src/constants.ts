@@ -17,6 +17,7 @@ export type LIST_RESPONSE = {
   totalRecords: number;
   summary?: string;
   primary?: string;
+  create?: any[];
 };
 
 export const ADSENSE_SORT = {

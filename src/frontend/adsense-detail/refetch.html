@@ -4,62 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Refetch Data</title>
-    <link rel="stylesheet" href="./common/list.css" />
-    <style>
-      .result-area {
-        padding: 10px;
-        margin-top: 20px;
-        border-radius: 8px;
-        background-color: #f9f9f9;
-        border: 1px solid #ddd;
-        white-space: pre;
-        font-family: monospace;
-      }
-      .loading {
-        text-align: center;
-        padding: 20px;
-      }
-      .buttons {
-        display: flex;
-        justify-content: center;
-        gap: 10px;
-        margin-bottom: 20px;
-      }
-      .buttons button {
-        padding: 10px 20px;
-        font-size: 14px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        background-color: #007bff;
-        color: white;
-      }
-      .buttons button:hover {
-        background-color: #0056b3;
-      }
-      .error-area {
-        margin-top: 20px;
-      }
-      .error-area input {
-        width: 100%;
-        padding: 10px;
-        margin-bottom: 10px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-      }
-      .error-area button {
-        padding: 10px 20px;
-        font-size: 14px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        background-color: #dc3545;
-        color: white;
-      }
-      .error-area button:hover {
-        background-color: #c82333;
-      }
-    </style>
+    <link rel="stylesheet" href="refetch.css" />
   </head>
   <body>
     <div id="component-root">
@@ -71,90 +16,14 @@
         <button id="refetch-month">Refetch Month</button>
         <button id="refetch-all">Refetch All</button>
       </div>
-      <div id="result-area" class="result-area"></div>
+      <div id="loading-area" class="result-area" style="display: none">Loading...</div>
+      <div id="log-area" class="result-area"></div>
+      <div id="unknown-area" class="result-area"></div>
       <div id="error-area" class="error-area" style="display: none">
         <input type="text" id="error-message" placeholder="Enter error message" />
         <button id="send-error">ERROR</button>
       </div>
     </div>
-    <script src="./common/list.js"></script>
-    <script>
-      const pid = new URLSearchParams(window.location.search).get('pid');
-      document.getElementById('pid').textContent = pid;
-
-      const resultArea = document.getElementById('result-area');
-      const errorArea = document.getElementById('error-area');
-      const errorMessageInput = document.getElementById('error-message');
-      const errorButton = document.getElementById('send-error');
-      const buttons = document.querySelectorAll('.buttons button');
-
-      buttons.forEach((button) => {
-        button.addEventListener('click', async () => {
-          const apiMap = {
-            'refetch-sites': 'http://localhost:3000/adsense-sync/refetch-sites',
-            'refetch-today': 'http://localhost:3000/adsense-sync/refetch-today',
-            'refetch-month': 'http://localhost:3000/adsense-sync/refetch-month',
-            'refetch-all': 'http://localhost:3000/adsense-sync/refetch-all',
-          };
-          const apiUrl = apiMap[button.id];
-
-          resultArea.innerHTML = '<div class="loading">Loading...</div>';
-
-          try {
-            const response = await fetch(`${apiUrl}?pid=${pid}`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-            });
-            const data = await response.json();
-            resultArea.innerHTML = formatTable(data);
-          } catch (error) {
-            resultArea.innerHTML = `<div class="error">Error fetching data: ${error.message}</div>`;
-          }
-        });
-      });
-
-      errorButton.addEventListener('click', async () => {
-        const errorMessage = errorMessageInput.value;
-        try {
-          await fetch(`http://localhost:3000/adsense/error?pid=${pid}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: errorMessage }),
-          });
-          alert('Error message sent successfully');
-        } catch (error) {
-          alert(`Failed to send error message: ${error.message}`);
-        }
-      });
-
-      function formatTable(data) {
-        if (Array.isArray(data)) {
-          if (data.length === 0) return '<div class="error">No data available</div>';
-
-          const headers = Object.keys(data[0]);
-          let table = '<table border="1" cellspacing="0" cellpadding="5"><thead><tr>';
-          table += `<th></th>`;
-          headers.forEach((header) => {
-            table += `<th>${header}</th>`;
-          });
-          table += '</tr></thead><tbody>';
-          data.forEach((row, index) => {
-            table += `<tr><td>${index}</td>`;
-            headers.forEach((header) => {
-              table += `<td>${row[header]}</td>`;
-            });
-            table += '</tr>';
-          });
-          table += '</tbody></table>';
-          return table;
-        } else if (typeof data === 'object') {
-          errorArea.style.display = 'block';
-          return `<pre>${JSON.stringify(data, null, 2)}</pre>`;
-        } else {
-          errorArea.style.display = 'block';
-          return `<pre>${data}</pre>`;
-        }
-      }
-    </script>
+    <script src="refetch.js"></script>
   </body>
 </html>

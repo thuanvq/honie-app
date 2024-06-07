@@ -78,11 +78,11 @@ export class AdsenseController {
     return this.adsenseService.getAdsenseDetail(pid);
   }
 
-  @Post(['wordpress', 'unused'])
+  @Post(['wordpress/on', 'unused/on'])
   async addBlogspot(@Query('pid') pid: string) {
     return this.adsenseService.addBlogspot(pid);
   }
-  @Post(['ready', 'pantip', 'running'])
+  @Post(['ready/off', 'pantip/off', 'running/off'])
   async stopBlogspot(@Query('pid') pid: string) {
     return this.adsenseService.stopBlogspot(pid);
   }

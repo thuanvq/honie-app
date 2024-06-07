@@ -36,7 +36,7 @@ export class WebsiteService {
       { label: 'PID', key: 'pid', sortable: true, link: true },
       { label: 'Site', key: 'name', sortable: true },
       { label: 'Status', key: 'status', sortable: true, type: 'center' },
-      { label: 'updatedAt', key: 'updatedAt', sortable: true, type: 'center' },
+      { label: 'fetchedAt', key: 'fetchedAt', sortable: true, type: 'center' },
     ];
     const totalRecords = total?.count;
     const filters = [

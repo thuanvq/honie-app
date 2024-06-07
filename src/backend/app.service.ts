@@ -24,11 +24,20 @@ export class AppService {
         ],
       },
       {
-        label: 'Blogspot',
+        label: 'Buff',
         submenu: [
-          { label: 'Using', apiEndpoint: 'http://localhost:3000/blogspot/using' },
-          { label: 'TEMP', apiEndpoint: 'http://localhost:3000/blogspot/temp' },
-          { label: 'Unused', apiEndpoint: 'http://localhost:3000/blogspot/unused' },
+          { label: 'Blogspot Using', apiEndpoint: 'http://localhost:3000/blogspot/using' },
+          { label: 'Blogspot TEMP', apiEndpoint: 'http://localhost:3000/blogspot/temp' },
+          { label: 'Blogspot Unused', apiEndpoint: 'http://localhost:3000/blogspot/unused' },
+          { label: 'Websites', apiEndpoint: 'http://localhost:3000/blogspot/websites' },
+        ],
+      },
+      {
+        label: 'Email',
+        submenu: [
+          { label: 'Check Mail', apiEndpoint: 'http://localhost:3000/gmail/inbox' },
+          { label: 'OTP', apiEndpoint: 'http://localhost:3000/gmail/otp' },
+          { label: 'Adsense', apiEndpoint: 'http://localhost:3000/gmail/adsense' },
         ],
       },
     ];

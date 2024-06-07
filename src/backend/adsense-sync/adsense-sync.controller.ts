@@ -1,9 +1,14 @@
-import { Controller, Post, Query } from '@nestjs/common';
-import { AdsenseService } from './adsense-sync.service';
+import { Controller, Get, Post, Query } from '@nestjs/common';
+import { AdsenseSyncService } from './adsense-sync.service';
 
 @Controller('adsense-sync')
 export class AdsenseSyncController {
-  constructor(private readonly adsenseService: AdsenseService) {}
+  constructor(private readonly adsenseService: AdsenseSyncService) {}
+
+  @Get('pid')
+  syncSites() {
+    return this.adsenseService.getPid();
+  }
 
   @Post('refetch-sites')
   syncSite(@Query('pid') pid: string) {

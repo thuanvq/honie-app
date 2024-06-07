@@ -39,8 +39,29 @@ export class BlogspotController {
   ) {
     return this.adsenseService.getBlogspotsUnused(page, limit, sortBy, order, website);
   }
-  @Post('using')
+  @Post('using/off')
   async turnOffBlog(@Query('website') website: string) {
     return this.adsenseService.turnOffBlog(website);
+  }
+
+  @Get('websites')
+  async getWebsites(
+    @Query('page') page: string,
+    @Query('rowsPerPage') limit: string,
+    @Query('sortBy') sortBy: string,
+    @Query('order') order: string,
+    @Query('name') name: string,
+  ) {
+    return this.adsenseService.getWebsites(page, limit, sortBy, order, name);
+  }
+
+  @Post('websites/on')
+  async turnOnWebsite(@Query('name') name: string) {
+    return this.adsenseService.turnOnWebsite(name);
+  }
+
+  @Post('websites/off')
+  async turnOffWebsite(@Query('name') name: string) {
+    return this.adsenseService.turnOffWebsite(name);
   }
 }

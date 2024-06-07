@@ -73,17 +73,25 @@ if (typeof CommonListComponent === 'undefined') {
 
       try {
         const response = await fetch(`${this.config.apiEndpoint}?${query.toString()}`);
-        const { headers, data, filters, title, totalRecords, summary, primary } = await response.json();
+        const { headers, data, filters, title, totalRecords, summary, primary, create } = await response.json();
         this.primary = primary || 'pid';
         if (!init) {
           document.title = title;
           document.getElementById('list-title').innerText = title;
-          this.totalRecords.innerText = `Total Records: ${totalRecords}`;
           this.summaryText.innerText = summary;
           this.populateFilters(filters);
           this.populateHeaders(headers);
-          this.totalRecords.innerText = `Total Records: ${totalRecords}`;
           init = true;
+        }
+        this.totalRecords.innerText = `Total Records: ${totalRecords}`;
+        if (create) {
+          document.getElementById('createButton').style.display = 'block';
+          document.getElementById('createButton').dataset.apiEndpoint = this.config.apiEndpoint;
+          document.getElementById('createButton').addEventListener('click', () => {
+            const timestamp = new Date().getTime();
+            localStorage.setItem(timestamp, JSON.stringify({ createFields: data.create, apiEndpoint: this.config.apiEndpoint }));
+            window.electron.ipcRenderer.send('open-form', timestamp);
+          });
         }
 
         this.tableBody.innerHTML = '';
@@ -107,10 +115,9 @@ if (typeof CommonListComponent === 'undefined') {
           } else if (header.key === 'website' && cellValue) {
             cellValue = `<a href="#" onclick="openWebView('${item.website}')">${item.website}</a>`;
           } else if (header.key === 'action') {
-            this.doneIcon = `./assets/${header.type ? header.type + '-' : ''}done-icon.svg`;
-            const runIcon = `./assets/${header.type ? header.type + '-' : ''}run-icon.svg`;
+            const runIcon = `./assets/${header.type}-run-icon.svg`;
             if (item[header.type]) {
-              cellValue = `<img src="${runIcon}" class="small-icon clickable" data-primary="${item[this.primary]}">`;
+              cellValue = `<img src="${runIcon}" class="small-icon clickable" data-type="${header.type}" data-primary="${item[this.primary]}">`;
             }
             tdClass = 'align-center';
           } else if (header.type === 'currency') {
@@ -132,10 +139,11 @@ if (typeof CommonListComponent === 'undefined') {
       document.querySelectorAll('.clickable').forEach((icon) => {
         icon.addEventListener('click', async (event) => {
           const value = event.target.getAttribute('data-primary');
+          const type = event.target.getAttribute('data-type');
           try {
-            const response = await fetch(`${this.config.apiEndpoint}?${this.primary}=${value}`, { method: 'POST' });
+            const response = await fetch(`${this.config.apiEndpoint}/${type}?${this.primary}=${value}`, { method: 'POST' });
             if (response.status === 201) {
-              event.target.src = this.doneIcon;
+              event.target.src = `./assets/${type}-done-icon.svg`;
               event.target.classList.remove('clickable');
             }
           } catch (error) {
@@ -237,6 +245,9 @@ if (typeof CommonListComponent === 'undefined') {
   };
   window.openWebView = function (website) {
     window.electron.ipcRenderer.send('open-webview', `https://${website}`);
+  };
+  window.openForm = function (key) {
+    window.electron.ipcRenderer.send('open-form', key);
   };
 }
 

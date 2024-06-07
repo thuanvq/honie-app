@@ -5,12 +5,13 @@ import { AdsenseModule } from './adsense/adsense.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { BlogspotModule } from './blogspot/blogspot.module';
+import { GmailModule } from './gmail/gmail.module';
 import { LoggingInterceptor } from './logging.interceptor';
 import { MongoDBModule } from './mongodb/mongodb.module';
 import { WebsiteModule } from './website/website.module';
 
 @Module({
-  imports: [AdsenseModule, MongoDBModule, WebsiteModule, BlogspotModule, AdsenseSyncModule],
+  imports: [AdsenseModule, MongoDBModule, WebsiteModule, BlogspotModule, AdsenseSyncModule, GmailModule],
   controllers: [AppController],
   providers: [
     AppService,
