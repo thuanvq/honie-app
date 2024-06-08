@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Email Detail</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background-color: #f5f5f5;
+      }
+      .container {
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        width: 80%;
+        max-width: 800px;
+        margin-top: 20px;
+      }
+      .header {
+        border-bottom: 1px solid #ddd;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+      }
+      .header h1 {
+        font-size: 24px;
+        margin: 0;
+      }
+      .header .meta {
+        font-size: 14px;
+        color: #888;
+      }
+      .content {
+        white-space: pre-wrap; /* Preserve whitespace */
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1 id="subject">Subject</h1>
+        <div class="meta">
+          <div>From: <span id="from"></span></div>
+          <div>To: <span id="to"></span></div>
+          <div>Date: <span id="internalDate"></span></div>
+        </div>
+      </div>
+      <div class="content" id="content">Content</div>
+    </div>
+
+    <script>
+      // Helper function to format date
+      function formatDate(timestamp) {
+        const date = new Date(parseInt(timestamp));
+        return date.toLocaleString();
+      }
+
+      async function fetchEmailDetail(id) {
+        try {
+          const response = await fetch(`http://localhost:3000/gmail/inbox/detail?id=${id}`);
+          const emailData = await response.json();
+
+          // Update the HTML elements with the email data
+          document.getElementById('subject').textContent = emailData.subject || 'No Subject';
+          document.getElementById('from').textContent = emailData.from || 'Unknown Sender';
+          document.getElementById('to').textContent = emailData.to || 'Unknown Recipient';
+          document.getElementById('internalDate').textContent = formatDate(emailData.internalDate) || 'Unknown Date';
+          document.getElementById('content').innerHTML = emailData.content || 'No Content';
+        } catch (error) {
+          console.error('Error fetching email detail:', error);
+        }
+      }
+
+      // Get the ID from the URL parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      const emailId = urlParams.get('id');
+
+      if (emailId) {
+        fetchEmailDetail(emailId);
+      } else {
+        console.error('No email ID found in URL');
+      }
+    </script>
+  </body>
+</html>

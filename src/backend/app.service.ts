@@ -1,7 +1,26 @@
-import { Injectable } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import axios from 'axios';
+import { Cache } from 'cache-manager';
+import { Collection } from 'mongodb';
+import { MongoDBService } from './mongodb/mongodb.service';
 
 @Injectable()
 export class AppService {
+  private userCollection: Collection;
+  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache, private readonly mongodbService: MongoDBService) {
+    this.userCollection = this.mongodbService.getCollection('honie');
+  }
+
+  async login(input: any) {
+    const user = await this.userCollection.findOne(input);
+    if (!user) {
+      throw new UnauthorizedException('Incorrect username or password');
+    }
+    await this.cacheManager.set(`user`, JSON.stringify(user), 86400);
+
+    return user;
+  }
   getTemplate(): any[] {
     return [
       {
@@ -68,5 +87,31 @@ export class AppService {
         data: [300, 400, 350, 300, 400, 350, 300, 400, 350, 300, 400, 350, 300, 400],
       },
     };
+  }
+  async getProxy() {
+    return [
+      'http://buivan:q8y924jx5u@23.142.16.184:65130',
+      'http://bui:sgd6mrz3n@23.142.16.138:51024',
+      'http://bui:sgd6mrz3n@23.142.16.138:51324',
+      'http://bui:sgd6mrz3n@23.142.16.138:51624',
+      'http://bui:sgd6mrz3n@23.142.16.138:51924',
+    ];
+  }
+  async checkProxy(proxy: string) {
+    try {
+      const response = await axios.get('http://ip-api.com/json', {
+        proxy: {
+          host: 'proxyserver1',
+          port: 8080,
+          auth: {
+            username: 'username',
+            password: 'password',
+          },
+        },
+      });
+      return response;
+    } catch (error) {
+      return { error };
+    }
   }
 }

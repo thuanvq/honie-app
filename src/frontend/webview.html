@@ -87,6 +87,12 @@
       webview.addEventListener('dom-ready', () => {
         document.getElementById('address-bar').value = webview.getURL();
       });
+      // Configuring proxy for the webview
+      webview.addEventListener('dom-ready', () => {
+        session.defaultSession.setProxy({
+          proxyRules: 'http://bui:sgd6mrz3n@23.142.16.138:51624',
+        });
+      });
     </script>
   </body>
 </html>

@@ -1,6 +1,8 @@
 // adsense.service.ts
 
-import { Injectable } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Inject, Injectable } from '@nestjs/common';
+import { Cache } from 'cache-manager';
 import { Collection } from 'mongodb';
 import { ADSENSE_SORT, COUNTRY_CODE, LIST_RESPONSE, READY_PANTIP, READY_WORDPRESS } from '../../constants';
 import { MongoDBService } from '../mongodb/mongodb.service';
@@ -9,7 +11,7 @@ import { MongoDBService } from '../mongodb/mongodb.service';
 export class AdsenseService {
   private gaCollection: Collection;
   private blogCollection: Collection;
-  constructor(private readonly mongodbService: MongoDBService) {
+  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache, private readonly mongodbService: MongoDBService) {
     this.gaCollection = this.mongodbService.getCollection('google_adsense');
     this.blogCollection = this.mongodbService.getCollection('sites_blog');
   }
@@ -43,6 +45,9 @@ export class AdsenseService {
   }
 
   async getAdsenseError(page: string, limit: string, sortBy: string, order: string, anything: string): Promise<LIST_RESPONSE> {
+    const user = JSON.parse(await this.cacheManager.get('user'));
+    console.log('user', user);
+
     const where: Record<string, any> = { error: { $ne: null }, deletedAt: null };
     if (anything) where.$or = [{ email: new RegExp(anything, 'i') }, { pid: new RegExp(anything, 'i') }];
 
@@ -51,7 +56,7 @@ export class AdsenseService {
       this.summaryAdsense(where),
     ]);
 
-    const headers = [
+    let headers = [
       ADSENSE_COLUMN.EMAIL,
       ADSENSE_COLUMN.PID,
       ADSENSE_COLUMN.LIMIT,
@@ -62,12 +67,15 @@ export class AdsenseService {
       ADSENSE_COLUMN.SITES,
       ADSENSE_COLUMN.ERROR,
     ];
+    if (user.role !== 'admin') headers = headers.filter((x) => x.role !== 'admin');
     const totalRecords = total?.count;
     const filters = [{ key: 'anything', label: 'Anything', type: 'text' }];
     return { title: 'Adsense Error', headers, filters, data, totalRecords, summary: '' };
   }
 
   async getAdsenseUnused(page: string, limit: string, sortBy: string, order: string, anything: string): Promise<LIST_RESPONSE> {
+    const user = JSON.parse(await this.cacheManager.get('user'));
+    console.log('user', user);
     const where: Record<string, any> = { blogCount: { $not: { $gt: 0 } }, 'sites.status': 'Ready', deletedAt: null, error: null };
     if (anything)
       where.$or = [
@@ -106,7 +114,7 @@ export class AdsenseService {
       d.on = !d.needBlog;
     });
 
-    const headers: any[] = [ADSENSE_COLUMN.EMAIL, ADSENSE_COLUMN.PID, ADSENSE_COLUMN.LIMIT, ADSENSE_COLUMN.COUNTRY, ADSENSE_COLUMN.ACTION_ON];
+    let headers: any[] = [ADSENSE_COLUMN.EMAIL, ADSENSE_COLUMN.PID, ADSENSE_COLUMN.LIMIT, ADSENSE_COLUMN.COUNTRY, ADSENSE_COLUMN.ACTION_ON];
     const date = new Date().getDate();
     for (let i = date; i > 0; i--) {
       headers.push({ label: `06-0${i}`, key: `2024060${i}`, sortable: true, type: 'currency' });
@@ -114,6 +122,7 @@ export class AdsenseService {
     headers.push(ADSENSE_COLUMN.MONTH);
     headers.push(ADSENSE_COLUMN.BALANCE);
     headers.push(ADSENSE_COLUMN.SITES);
+    if (user.role !== 'admin') headers = headers.filter((x) => x.role !== 'admin');
 
     const totalRecords = data.length;
     const filters = [{ key: 'anything', label: 'Anything', type: 'text' }];
@@ -121,6 +130,8 @@ export class AdsenseService {
   }
 
   async getAdsenseWordpress(page: string, limit: string, sortBy: string, order: string, anything: string): Promise<LIST_RESPONSE> {
+    const user = JSON.parse(await this.cacheManager.get('user'));
+    console.log('user', user);
     const where: Record<string, any> = { ...READY_WORDPRESS, deletedAt: null, error: null };
     if (anything) where.$or = [{ email: new RegExp(anything, 'i') }, { pid: new RegExp(anything, 'i') }];
 
@@ -129,7 +140,7 @@ export class AdsenseService {
       this.summaryAdsense(where),
     ]);
 
-    const headers = [
+    let headers = [
       ADSENSE_COLUMN.EMAIL,
       ADSENSE_COLUMN.PID,
       ADSENSE_COLUMN.LIMIT,
@@ -146,6 +157,7 @@ export class AdsenseService {
       ADSENSE_COLUMN.BALANCE,
       ADSENSE_COLUMN.UPDATED,
     ];
+    if (user.role !== 'admin') headers = headers.filter((x) => x.role !== 'admin');
     const totalRecords = total?.count;
     const summary = `today: ${total.today} $, yesterday: ${total.yesterday} $, month: ${total.month} $`;
     const filters = [{ key: 'anything', label: 'Anything', type: 'text' }];
@@ -153,6 +165,8 @@ export class AdsenseService {
   }
 
   async getAdsenseReady(page: string, limit: string, sortBy: string = 'rpm', order: string, anything: string): Promise<LIST_RESPONSE> {
+    const user = JSON.parse(await this.cacheManager.get('user'));
+    console.log('user', user);
     sortBy = sortBy || 'rpm';
     order = order || 'desc';
     const where: Record<string, any> = { 'sites.status': 'Ready', deletedAt: null, error: null };
@@ -163,7 +177,7 @@ export class AdsenseService {
       this.summaryAdsense(where),
     ]);
 
-    const headers = [
+    let headers = [
       ADSENSE_COLUMN.EMAIL,
       ADSENSE_COLUMN.PID,
       ADSENSE_COLUMN.LIMIT,
@@ -180,6 +194,7 @@ export class AdsenseService {
       ADSENSE_COLUMN.BALANCE,
       ADSENSE_COLUMN.UPDATED,
     ];
+    if (user.role !== 'admin') headers = headers.filter((x) => x.role !== 'admin');
     const totalRecords = total?.count;
     const summary = `today: ${total.today} $, yesterday: ${total.yesterday} $, month: ${total.month} $`;
     const filters = [{ key: 'anything', label: 'Anything', type: 'text' }];
@@ -187,6 +202,8 @@ export class AdsenseService {
   }
 
   async getAdsenseRunning(page: string, limit: string, sortBy: string = 'rpm', order: string, anything: string): Promise<LIST_RESPONSE> {
+    const user = JSON.parse(await this.cacheManager.get('user'));
+    console.log('user', user);
     sortBy = sortBy || 'rpm';
     order = order || 'desc';
     const where: Record<string, any> = { blogCount: { $gt: 0 }, deletedAt: null, error: null };
@@ -197,7 +214,7 @@ export class AdsenseService {
       this.summaryAdsense(where),
     ]);
 
-    const headers = [
+    let headers = [
       ADSENSE_COLUMN.EMAIL,
       ADSENSE_COLUMN.PID,
       ADSENSE_COLUMN.LIMIT,
@@ -215,6 +232,7 @@ export class AdsenseService {
       ADSENSE_COLUMN.BALANCE,
       ADSENSE_COLUMN.UPDATED,
     ];
+    if (user.role !== 'admin') headers = headers.filter((x) => x.role !== 'admin');
     const totalRecords = total?.count;
     const summary = `today: ${total.today} $, yesterday: ${total.yesterday} $, month: ${total.month} $`;
     const filters = [{ key: 'anything', label: 'Anything', type: 'text' }];
@@ -222,6 +240,8 @@ export class AdsenseService {
   }
 
   async getAdsensePantip(page: string, limit: string, sortBy: string = 'rpm', order: string = 'desc', anything: string): Promise<LIST_RESPONSE> {
+    const user = JSON.parse(await this.cacheManager.get('user'));
+    console.log('user', user);
     const where: Record<string, any> = { ...READY_PANTIP, deletedAt: null, error: null };
     if (anything) where.$or = [{ email: new RegExp(anything, 'i') }, { pid: new RegExp(anything, 'i') }];
 
@@ -230,7 +250,7 @@ export class AdsenseService {
       this.summaryAdsense(where),
     ]);
 
-    const headers = [
+    let headers = [
       ADSENSE_COLUMN.EMAIL,
       ADSENSE_COLUMN.PID,
       ADSENSE_COLUMN.LIMIT,
@@ -247,6 +267,7 @@ export class AdsenseService {
       ADSENSE_COLUMN.BALANCE,
       ADSENSE_COLUMN.UPDATED,
     ];
+    if (user.role !== 'admin') headers = headers.filter((x) => x.role !== 'admin');
     const totalRecords = total?.count;
     const summary = `today: ${total.today} $, yesterday: ${total.yesterday} $, month: ${total.month} $`;
     const filters = [{ key: 'anything', label: 'Anything', type: 'text' }];
@@ -314,14 +335,14 @@ export class AdsenseService {
     return result[0];
   }
 }
-const ADSENSE_COLUMN = {
+const ADSENSE_COLUMN: Record<string, { label: string; key: string; sortable?: boolean; type?: string; link?: boolean; role?: string }> = {
   EMAIL: { label: 'Email', key: 'email', sortable: true },
   PID: { label: 'PID', key: 'pid', sortable: true, link: true },
   LIMIT: { label: 'Limit', key: 'limit', sortable: true, type: 'center' },
   COUNTRY: { label: 'Country', key: 'country', sortable: true, type: 'center' },
   UTC: { label: 'UTC', key: 'utc', sortable: true, type: 'number' },
-  ACTION_OFF: { label: 'Stop', key: 'action', type: 'off', sortable: false },
-  ACTION_ON: { label: 'Run', key: 'action', type: 'on', sortable: false },
+  ACTION_OFF: { label: 'Stop', key: 'action', type: 'off', sortable: false, role: 'admin' },
+  ACTION_ON: { label: 'Run', key: 'action', type: 'on', sortable: false, role: 'admin' },
   BLOG_COUNT: { label: 'Blogs', key: 'blogCount', sortable: true, type: 'number' },
   RPM: { label: 'RPM', key: 'rpm', sortable: true, type: 'currency' },
   VIEWS: { label: 'Views', key: 'views', sortable: true, type: 'number' },

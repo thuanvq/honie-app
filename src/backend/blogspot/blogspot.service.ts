@@ -1,6 +1,6 @@
 // adsense.service.ts
 
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Collection } from 'mongodb';
 import { LIST_RESPONSE } from '../../constants';
 import { getDateTime } from '../../utils';
@@ -28,6 +28,17 @@ export class BlogspotService {
   }
   async turnOnWebsite(name: string) {
     await this.sitesBuffCollection.updateOne({ name }, { $unset: { stoppedAt: '' }, $setOnInsert: { createdAt: new Date() } }, { upsert: true });
+    return true;
+  }
+  async createWebsite(input: any) {
+    const { name, quota } = input;
+    if (Number(quota) > 10000) throw new BadRequestException('Quota need be less than 10,000');
+    try {
+      const domain = new URL(name.startsWith('http') ? name : `https://${name}`).hostname;
+      await this.sitesBuffCollection.insertOne({ name: domain, quota: Number(quota) });
+    } catch (e) {
+      throw new BadRequestException(e.toString());
+    }
     return true;
   }
   async getWebsites(page: string, limit: string, sortBy: string, order: string = 'desc', name: string): Promise<LIST_RESPONSE> {
@@ -77,8 +88,8 @@ export class BlogspotService {
       primary: 'name',
       summary: '',
       create: [
-        { key: 'name', Label: 'Name', type: 'checkbox' },
-        { key: 'level', Label: 'Level', type: 'text' },
+        { key: 'name', Label: 'Website (ex: funny.blogspot.com)', type: 'text' },
+        { key: 'quota', Label: 'Quota per day (ex: 2000)', type: 'number' },
       ],
     };
   }
@@ -131,7 +142,7 @@ export class BlogspotService {
       .collation({ locale: 'en_US', numericOrdering: true })
       .skip(skip || 0)
       .limit(limit || 100)
-      .project({ email: 1, pid: 1, website: 1, pantip: 1, posts: { $size: '$urls' }, off: 'true' })
+      .project({ email: 1, pid: 1, website: 1, script: 1, count: 1, type: 1, off: 'true' })
       .toArray();
     return data;
   }
@@ -156,6 +167,7 @@ const BLOGSPOT_HEADERS = [
   { label: 'Email', key: 'email', sortable: true },
   { label: 'PID', key: 'pid', sortable: true, link: true },
   { label: 'Website', key: 'website', sortable: true },
-  { label: 'Pantip', key: 'pantip', sortable: true, type: 'center' },
-  { label: 'Posts', key: 'posts', sortable: true, type: 'center' },
+  { label: 'Type', key: 'type', sortable: true },
+  { label: 'Script', key: 'script', sortable: true },
+  { label: 'Posts', key: 'count', sortable: true, type: 'number' },
 ];

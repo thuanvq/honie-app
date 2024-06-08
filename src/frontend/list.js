@@ -73,7 +73,7 @@ if (typeof CommonListComponent === 'undefined') {
 
       try {
         const response = await fetch(`${this.config.apiEndpoint}?${query.toString()}`);
-        const { headers, data, filters, title, totalRecords, summary, primary, create } = await response.json();
+        const { headers, data, filters, title, totalRecords, summary, primary, create, refetch } = await response.json();
         this.primary = primary || 'pid';
         if (!init) {
           document.title = title;
@@ -86,11 +86,29 @@ if (typeof CommonListComponent === 'undefined') {
         this.totalRecords.innerText = `Total Records: ${totalRecords}`;
         if (create) {
           document.getElementById('createButton').style.display = 'block';
-          document.getElementById('createButton').dataset.apiEndpoint = this.config.apiEndpoint;
           document.getElementById('createButton').addEventListener('click', () => {
             const timestamp = new Date().getTime();
-            localStorage.setItem(timestamp, JSON.stringify({ createFields: data.create, apiEndpoint: this.config.apiEndpoint }));
+            localStorage.setItem(timestamp, JSON.stringify({ createFields: create, apiEndpoint: this.config.apiEndpoint }));
             window.electron.ipcRenderer.send('open-form', timestamp);
+          });
+        }
+        if (refetch) {
+          document.getElementById('refetchButton').style.display = 'block';
+          document.getElementById('refetchButton').addEventListener('click', async () => {
+            try {
+              document.getElementById('refetchButton').innerText = 'Wait...';
+              const refetchResponse = await fetch(`${this.config.apiEndpoint}/refetch`);
+              if (refetchResponse.status === 200) {
+                this.fetchAndRenderData();
+                document.getElementById('refetchButton').innerText = 'Refetch';
+              } else {
+                console.error('Refetch failed:', refetchResponse.statusText);
+                document.getElementById('refetchButton').innerText = 'Refetch';
+              }
+            } catch (error) {
+              console.error('Error during refetch:', error);
+              document.getElementById('refetchButton').innerText = 'Refetch';
+            }
           });
         }
 
@@ -111,7 +129,9 @@ if (typeof CommonListComponent === 'undefined') {
           let tdClass = '';
           let cellValue = item[header.key] || '';
           if (header.key === 'pid' && cellValue) {
-            cellValue = `<a href="#" onclick="openDetail('${item.pid}')">${item.pid}</a>`;
+            cellValue = `<a href="#" onclick="openAdsense('${item.pid}')">${item.pid}</a>`;
+          } else if (header.key === 'emailId' && cellValue) {
+            cellValue = `<a href="#" onclick="openEmail('${item.emailId}')">${item.emailId}</a>`;
           } else if (header.key === 'website' && cellValue) {
             cellValue = `<a href="#" onclick="openWebView('${item.website}')">${item.website}</a>`;
           } else if (header.key === 'action') {
@@ -126,6 +146,9 @@ if (typeof CommonListComponent === 'undefined') {
           } else if (header.type === 'number') {
             cellValue = formatNumber(item[header.key]);
             tdClass = 'align-right';
+          } else if (header.type === 'date') {
+            cellValue = formatDate(item[header.key]);
+            tdClass = 'align-center';
           } else if (header.type === 'center') {
             tdClass = 'align-center';
           }
@@ -240,8 +263,11 @@ if (typeof CommonListComponent === 'undefined') {
   function loadCommonListComponent(apiEndpoint) {
     new CommonListComponent({ apiEndpoint });
   }
-  window.openDetail = function (pid) {
-    window.electron.ipcRenderer.send('open-detail-window', pid);
+  window.openAdsense = function (pid) {
+    window.electron.ipcRenderer.send('open-adsense', pid);
+  };
+  window.openEmail = function (id) {
+    window.electron.ipcRenderer.send('open-email', id);
   };
   window.openWebView = function (website) {
     window.electron.ipcRenderer.send('open-webview', `https://${website}`);
@@ -253,6 +279,12 @@ if (typeof CommonListComponent === 'undefined') {
 
 function formatCurrency(value) {
   return value !== undefined && value !== null ? `${value.toFixed(2)} $` : '';
+}
+
+function formatDate(value) {
+  if (value === undefined || value === null) return '';
+  const date = new Date(parseInt(value));
+  return date.toLocaleString();
 }
 
 function formatNumber(value) {

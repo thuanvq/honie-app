@@ -1,11 +1,11 @@
 // adsense.controller.ts
 
-import { Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { BlogspotService } from './blogspot.service';
 
 @Controller('blogspot')
 export class BlogspotController {
-  constructor(private readonly adsenseService: BlogspotService) {}
+  constructor(private readonly _service: BlogspotService) {}
 
   @Get('using')
   async getBlogspotsUsing(
@@ -15,7 +15,7 @@ export class BlogspotController {
     @Query('order') order: string,
     @Query('website') website: string,
   ) {
-    return this.adsenseService.getBlogspotsUsing(page, limit, sortBy, order, website);
+    return this._service.getBlogspotsUsing(page, limit, sortBy, order, website);
   }
 
   @Get('temp')
@@ -26,7 +26,7 @@ export class BlogspotController {
     @Query('order') order: string,
     @Query('website') website: string,
   ) {
-    return this.adsenseService.getBlogspotsTemp(page, limit, sortBy, order, website);
+    return this._service.getBlogspotsTemp(page, limit, sortBy, order, website);
   }
 
   @Get('unused')
@@ -37,11 +37,11 @@ export class BlogspotController {
     @Query('order') order: string,
     @Query('website') website: string,
   ) {
-    return this.adsenseService.getBlogspotsUnused(page, limit, sortBy, order, website);
+    return this._service.getBlogspotsUnused(page, limit, sortBy, order, website);
   }
   @Post('using/off')
   async turnOffBlog(@Query('website') website: string) {
-    return this.adsenseService.turnOffBlog(website);
+    return this._service.turnOffBlog(website);
   }
 
   @Get('websites')
@@ -52,16 +52,21 @@ export class BlogspotController {
     @Query('order') order: string,
     @Query('name') name: string,
   ) {
-    return this.adsenseService.getWebsites(page, limit, sortBy, order, name);
+    return this._service.getWebsites(page, limit, sortBy, order, name);
   }
 
   @Post('websites/on')
   async turnOnWebsite(@Query('name') name: string) {
-    return this.adsenseService.turnOnWebsite(name);
+    return this._service.turnOnWebsite(name);
   }
 
   @Post('websites/off')
   async turnOffWebsite(@Query('name') name: string) {
-    return this.adsenseService.turnOffWebsite(name);
+    return this._service.turnOffWebsite(name);
+  }
+
+  @Post('websites')
+  async createWebsite(@Body() body: any) {
+    return this._service.createWebsite(body);
   }
 }

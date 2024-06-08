@@ -5,10 +5,10 @@ import { GmailService } from './gmail.service';
 export class GmailController {
   constructor(private readonly gmailService: GmailService) {}
 
-  @Get('messages')
-  async getMessages(): Promise<string[]> {
+  @Get(['inbox/refetch', 'otp/refetch', 'adsense/refetch'])
+  async fetchMail(): Promise<string[]> {
     try {
-      const messages = await this.gmailService.findInvitation();
+      const messages = await this.gmailService.fetchMail();
       return messages;
     } catch (error) {
       return [`Error: ${error.message}`];
@@ -21,9 +21,9 @@ export class GmailController {
     @Query('rowsPerPage') limit: string,
     @Query('sortBy') sortBy: string,
     @Query('order') order: string,
-    @Query('to') to: string,
+    @Query('anything') anything: string,
   ) {
-    return this.gmailService.getInbox(to);
+    return this.gmailService.getInbox(anything);
   }
 
   @Get('otp')
@@ -32,9 +32,9 @@ export class GmailController {
     @Query('rowsPerPage') limit: string,
     @Query('sortBy') sortBy: string,
     @Query('order') order: string,
-    @Query('to') to: string,
+    @Query('anything') anything: string,
   ) {
-    return this.gmailService.getInbox(to, 'OTP');
+    return this.gmailService.getInbox(anything, 'OTP');
   }
 
   @Get('adsense')
@@ -43,9 +43,9 @@ export class GmailController {
     @Query('rowsPerPage') limit: string,
     @Query('sortBy') sortBy: string,
     @Query('order') order: string,
-    @Query('to') to: string,
+    @Query('anything') anything: string,
   ) {
-    return this.gmailService.getInbox(to, 'Adsense');
+    return this.gmailService.getInbox(anything, 'Adsense');
   }
 
   @Get('inbox/detail')

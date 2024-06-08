@@ -130,6 +130,10 @@ button {
   background-color: #e9ebec;
   color: rgb(42, 54, 230);
 }
+#refetchButton {
+  background-color: #e9ebec;
+  color: rgb(42, 54, 230);
+}
 button:hover {
   opacity: 0.8;
 }

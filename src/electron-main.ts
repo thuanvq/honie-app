@@ -8,6 +8,32 @@ require('electron-reload')(__dirname, {
 });
 
 let mainWindow: BrowserWindow | null;
+let loginWindow: BrowserWindow | null;
+function createLoginWindow() {
+  if (mainWindow) {
+    mainWindow.close();
+  }
+
+  loginWindow = new BrowserWindow({
+    width: 800,
+    height: 600,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false,
+      contextIsolation: true,
+    },
+    autoHideMenuBar: true,
+  });
+
+  const startUrl = url.format({
+    pathname: path.join(__dirname, '..', 'src', 'frontend', 'login.html'),
+    protocol: 'file:',
+    slashes: true,
+  });
+
+  loginWindow.loadURL(startUrl);
+  // Menu.setApplicationMenu(Menu.buildFromTemplate([]));
+}
 
 async function createMenu() {
   try {
@@ -42,6 +68,23 @@ async function createMenu() {
         );
       },
     });
+    menuTemplate.unshift({
+      label: 'App',
+      submenu: [
+        {
+          label: 'Logout',
+          click: () => {
+            createLoginWindow();
+          },
+        },
+        {
+          label: 'Exit',
+          click: () => {
+            app.quit();
+          },
+        },
+      ],
+    });
     menuTemplate.push({
       label: 'Tools',
       submenu: [
@@ -61,6 +104,18 @@ async function createMenu() {
         {
           label: 'Fetch Adsense Information',
           click: () => createRefetchWindow(''),
+        },
+        {
+          label: 'Proxy Checker',
+          click: () => {
+            mainWindow?.loadURL(
+              url.format({
+                pathname: path.join(__dirname, '..', 'src', 'frontend', 'proxy-checker.html'),
+                protocol: 'file:',
+                slashes: true,
+              }),
+            );
+          },
         },
       ],
     });
@@ -92,6 +147,7 @@ async function createWindow() {
   });
 
   mainWindow.loadURL(startUrl);
+  createMenu().catch((error) => console.error('Failed to create menu:', error));
 
   mainWindow.webContents.on('new-window' as any, (event, externalUrl) => {
     event.preventDefault();
@@ -103,8 +159,8 @@ async function createWindow() {
   });
 }
 
-function createDetailWindow(pid: string) {
-  let detailWindow: BrowserWindow | null = new BrowserWindow({
+function createAdsenseWindow(pid: string) {
+  let adsenseWindow: BrowserWindow | null = new BrowserWindow({
     width: 1600,
     height: 1200,
     webPreferences: {
@@ -121,15 +177,15 @@ function createDetailWindow(pid: string) {
     search: `?pid=${pid}`,
   });
 
-  detailWindow.loadURL(detailUrl);
+  adsenseWindow.loadURL(detailUrl);
 
-  detailWindow.on('closed', () => {
-    detailWindow = null;
+  adsenseWindow.on('closed', () => {
+    adsenseWindow = null;
   });
 }
 
-ipcMain.on('open-detail-window', (event, pid) => {
-  createDetailWindow(pid);
+ipcMain.on('open-adsense', (event, pid) => {
+  createAdsenseWindow(pid);
 });
 
 function createFormWindow(key: string) {
@@ -161,6 +217,34 @@ ipcMain.on('open-form', (event, key) => {
   createFormWindow(key);
 });
 
+function createEmailWindow(id: string) {
+  let emailWindow: BrowserWindow | null = new BrowserWindow({
+    width: 800,
+    height: 600,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false,
+      contextIsolation: true,
+    },
+  });
+
+  const detailUrl = url.format({
+    pathname: path.join(__dirname, '..', 'src', 'frontend', 'email.html'),
+    protocol: 'file:',
+    slashes: true,
+    search: `?id=${id}`,
+  });
+
+  emailWindow.loadURL(detailUrl);
+
+  emailWindow.on('closed', () => {
+    emailWindow = null;
+  });
+}
+
+ipcMain.on('open-email', (event, id) => {
+  createEmailWindow(id);
+});
 function createRefetchWindow(pid: string) {
   let refetchWindow: BrowserWindow | null = new BrowserWindow({
     width: 1600,

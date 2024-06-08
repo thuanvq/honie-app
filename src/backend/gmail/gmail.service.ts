@@ -16,10 +16,14 @@ export class GmailService implements OnModuleInit {
 
   private inboxCollection: Collection;
   private scenarioCollection: Collection;
+  private gaCollection: Collection;
+  private blogCollection: Collection;
 
   constructor(private readonly mongoDBService: MongoDBService) {
     this.inboxCollection = this.mongoDBService.getCollection('google_inbox');
     this.scenarioCollection = this.mongoDBService.getCollection('scenario');
+    this.gaCollection = this.mongoDBService.getCollection('google_adsense');
+    this.blogCollection = this.mongoDBService.getCollection('sites_blog');
   }
 
   async onModuleInit() {
@@ -30,6 +34,7 @@ export class GmailService implements OnModuleInit {
     const { client_secret, client_id, redirect_uris } = credentials.installed;
     const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
 
+    console.log(new Date(), 'start');
     return new Promise((resolve, reject) => {
       fs.readFile(this.TOKEN_PATH, async (err, token) => {
         if (err) {
@@ -46,6 +51,7 @@ export class GmailService implements OnModuleInit {
           console.log(token.toString());
           oAuth2Client.setCredentials(JSON.parse(token.toString()));
           resolve(oAuth2Client);
+          console.log(new Date(), 'end');
         }
       });
     });
@@ -72,11 +78,11 @@ export class GmailService implements OnModuleInit {
     });
   }
 
-  async findInvitation(): Promise<string[]> {
+  async fetchMail(): Promise<string[]> {
     const gmail = google.gmail({ version: 'v1', auth: this.oAuth2Client });
     const res = await gmail.users.messages.list({
       userId: 'me',
-      maxResults: 500,
+      maxResults: 5,
     });
 
     if (!res.data.messages) {
@@ -103,10 +109,13 @@ export class GmailService implements OnModuleInit {
         const subjectHeader = headers.find((header) => header.name === 'Subject');
         const subject = subjectHeader ? subjectHeader.value : 'No Subject';
         const toHeader = headers.find((header) => header.name === 'To');
+        const fromHeader = headers.find((header) => header.name === 'From');
         const to = toHeader ? toHeader.value : 'No To';
-        const pid = this.extractPID(messageContent);
-        const invitationLink = this.extractInvitationLink(messageContent);
+        const from = fromHeader ? fromHeader.value : 'No From';
         const type = convertTypeFromSubject(subject);
+        const pid = /Adsense/.test(type) ? this.extractPID(messageContent) : null;
+        const invitationLink = type === 'Adsense Invite' ? this.extractInvitationLink(messageContent) : null;
+        const otp = type === 'OTP' ? this.extractVerificationCode(subject) || this.extractVerificationCode(messageContent) : null;
 
         const message = {
           id: res.data.id,
@@ -114,15 +123,29 @@ export class GmailService implements OnModuleInit {
           to,
           pid,
           subject,
+          otp,
           threadId: res.data.threadId,
           snippet: res.data.snippet,
           historyId: res.data.historyId,
           internalDate: res.data.internalDate,
           content: messageContent,
           invitationLink,
+          from,
         };
 
         const result = await this.inboxCollection.updateOne({ id: message.id }, { $set: message }, { upsert: true });
+        if (type === 'Adsense Closed') {
+          await Promise.all([
+            this.gaCollection.updateOne({ pid }, { $set: { error: type } }),
+            this.blogCollection.updateMany({ pid }, { $unset: { pantip: '', pid: '' } }),
+          ]);
+        } else if (type === 'Adsense Ad Limited') {
+          await Promise.all([
+            this.gaCollection.updateOne({ pid }, { $set: { 'information.limit': new Date(parseInt(message.internalDate)).toLocaleString() } }),
+          ]);
+        } else if (type === 'Adsense Invite') {
+          await Promise.all([this.scenarioCollection.insertOne({ type: 'INVITE', email: to, pid, invitationLink })]);
+        }
 
         this.logger.log(
           `Upserted message with id: ${message.id}, matched: ${result.matchedCount}, modified: ${result.modifiedCount}, upserted: ${result.upsertedCount}`,
@@ -192,27 +215,28 @@ export class GmailService implements OnModuleInit {
     });
   }
 
-  async getInbox(to: string, type?: string) {
+  async getInbox(anything: string, type?: string) {
     const where: Record<string, any> = {};
-    if (to) where.to = new RegExp(to, 'i');
+    if (anything) where.$or = [{ to: new RegExp(anything, 'i') }, { type: new RegExp(anything, 'i') }, { subject: new RegExp(anything, 'i') }];
     if (type) where.type = new RegExp(type, 'i');
 
     const data = await this.inboxCollection
       .find(where)
-      .project({ id: 1, to: 1, subject: 1, type: 1, internalDate: 1 })
+      .project({ emailId: '$id', to: 1, subject: 1, type: 1, internalDate: 1, otp: 1 })
       .sort({ internalDate: -1 })
       .limit(100)
       .toArray();
 
     const headers = [
-      { label: 'ID', key: 'id', sortable: false },
+      { label: 'ID', key: 'emailId', sortable: false },
       { label: 'Email', key: 'to', sortable: false },
       { label: 'Subject', key: 'subject', sortable: false },
       { label: 'Date', key: 'internalDate', sortable: false, type: 'date' },
     ];
+    if (type === 'OTP') headers.push({ label: 'OTP', key: 'otp', sortable: false });
     const totalRecords = data.length;
-    const filters = [{ key: 'to', label: 'Email', type: 'text' }];
-    return { title: `Check email`, headers, filters, data, totalRecords, summary: '', primary: 'id' };
+    const filters = [{ key: 'anything', label: 'Anything', type: 'text' }];
+    return { title: `Check email ${type || ''}`, headers, filters, data, totalRecords, summary: '', refetch: true };
   }
 
   async getEmail(id: string) {

@@ -1,191 +1,194 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Create Form</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f0f0f0;
-        }
-        #formContainer {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 600px;
-            margin: 20px;
-        }
-        h1 {
-            font-size: 24px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        form {
-            display: flex;
-            flex-direction: column;
-        }
-        label {
-            margin-bottom: 10px;
-        }
-        input[type="text"],
-        input[type="number"],
-        select {
-            width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-            margin-bottom: 20px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        input[type="checkbox"] {
-            margin-right: 10px;
-        }
-        #errorMessage,
-        #successMessage {
-            margin-bottom: 20px;
-            padding: 10px;
-            border-radius: 4px;
-            display: none;
-        }
-        #errorMessage {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        #successMessage {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        #buttons {
-            display: flex;
-            justify-content: space-between;
-        }
-        button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        #cancelButton {
-            background-color: #6c757d;
-            color: white;
-        }
-        #submitButton {
-            background-color: #007bff;
-            color: white;
-        }
-        button:hover {
-            opacity: 0.8;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f0f0f0;
+      }
+      #formContainer {
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 600px;
+        margin: 20px;
+      }
+      h1 {
+        font-size: 24px;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+      form {
+        display: flex;
+        flex-direction: column;
+      }
+      label {
+        margin-bottom: 10px;
+      }
+      input[type='text'],
+      input[type='number'],
+      select {
+        width: 100%;
+        padding: 8px;
+        margin-top: 5px;
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+      input[type='checkbox'] {
+        margin-right: 10px;
+      }
+      #errorMessage,
+      #successMessage {
+        margin-bottom: 20px;
+        padding: 10px;
+        border-radius: 4px;
+        display: none;
+      }
+      #errorMessage {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+      #successMessage {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+      #buttons {
+        display: flex;
+        justify-content: space-between;
+      }
+      button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      #cancelButton {
+        background-color: #6c757d;
+        color: white;
+      }
+      #submitButton {
+        background-color: #007bff;
+        color: white;
+      }
+      button:hover {
+        opacity: 0.8;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div id="formContainer">
-        <h1>Create New Entry</h1>
-        <form id="createForm">
-            <div id="errorMessage"></div>
-            <div id="successMessage"></div>
-            <div id="formFields"></div>
-            <div id="buttons">
-                <button type="button" id="cancelButton">Cancel</button>
-                <button type="submit" id="submitButton">Submit</button>
-            </div>
-        </form>
+      <h1>Create New</h1>
+      <form id="createForm">
+        <div id="errorMessage"></div>
+        <div id="successMessage"></div>
+        <div id="formFields"></div>
+        <div id="buttons">
+          <button type="button" id="cancelButton">Cancel</button>
+          <button type="submit" id="submitButton">Submit</button>
+        </div>
+      </form>
     </div>
 
     <script>
-        async function fetchOptions(apiEndpoint, key) {
-            const response = await fetch(`${apiEndpoint}/options/${key}`);
-            const data = await response.json();
-            return data.options;
+      const urlParams = new URLSearchParams(window.location.search);
+      const localKey = urlParams.get('key');
+      const { createFields, apiEndpoint } = JSON.parse(localStorage.getItem(localKey));
+
+      async function fetchOptions(apiEndpoint, key) {
+        const response = await fetch(`${apiEndpoint}/options/${key}`);
+        const data = await response.json();
+        return data.options;
+      }
+
+      async function renderFormFields(fields, apiEndpoint) {
+        const formFieldsContainer = document.getElementById('formFields');
+        formFieldsContainer.innerHTML = '';
+
+        for (const field of fields) {
+          let inputElement;
+
+          switch (field.type) {
+            case 'text':
+            case 'number':
+              inputElement = document.createElement('input');
+              inputElement.type = field.type;
+              break;
+            case 'checkbox':
+              inputElement = document.createElement('input');
+              inputElement.type = 'checkbox';
+              break;
+            case 'combobox':
+              inputElement = document.createElement('select');
+              const options = await fetchOptions(apiEndpoint, field.key);
+              options.forEach((option) => {
+                const optionElement = document.createElement('option');
+                optionElement.value = option.value;
+                optionElement.textContent = option.label;
+                inputElement.appendChild(optionElement);
+              });
+              break;
+            default:
+              inputElement = document.createElement('input');
+              inputElement.type = 'text';
+          }
+
+          inputElement.name = field.key;
+          const label = document.createElement('label');
+          label.textContent = field.Label;
+          label.appendChild(inputElement);
+          formFieldsContainer.appendChild(label);
         }
+      }
 
-        async function renderFormFields(fields, apiEndpoint) {
-            const formFieldsContainer = document.getElementById('formFields');
-            formFieldsContainer.innerHTML = '';
+      document.getElementById('cancelButton').addEventListener('click', () => {
+        window.close(); // Close the form window
+      });
 
-            for (const field of fields) {
-                let inputElement;
+      document.getElementById('createForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const form = event.target;
+        const formData = new FormData(form);
+        const formDataObj = Object.fromEntries(formData.entries());
 
-                switch (field.type) {
-                    case 'text':
-                    case 'number':
-                        inputElement = document.createElement('input');
-                        inputElement.type = field.type;
-                        break;
-                    case 'checkbox':
-                        inputElement = document.createElement('input');
-                        inputElement.type = 'checkbox';
-                        break;
-                    case 'combobox':
-                        inputElement = document.createElement('select');
-                        const options = await fetchOptions(apiEndpoint, field.key);
-                        options.forEach(option => {
-                            const optionElement = document.createElement('option');
-                            optionElement.value = option.value;
-                            optionElement.textContent = option.label;
-                            inputElement.appendChild(optionElement);
-                        });
-                        break;
-                    default:
-                        inputElement = document.createElement('input');
-                        inputElement.type = 'text';
-                }
-
-                inputElement.name = field.key;
-                const label = document.createElement('label');
-                label.textContent = field.Label;
-                label.appendChild(inputElement);
-                formFieldsContainer.appendChild(label);
-            }
-        }
-
-        document.getElementById('cancelButton').addEventListener('click', () => {
-            window.close(); // Close the form window
+        const response = await fetch(apiEndpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formDataObj),
         });
 
-        document.getElementById('createForm').addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const form = event.target;
-            const formData = new FormData(form);
-            const formDataObj = Object.fromEntries(formData.entries());
-
-            const apiEndpoint = localStorage.getItem('apiEndpoint');
-
-            const response = await fetch(apiEndpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formDataObj),
-            });
-
-            if (response.status !== 201) {
-                const errorData = await response.json();
-                document.getElementById('errorMessage').textContent = errorData.message;
-                document.getElementById('errorMessage').style.display = 'block';
-            } else {
-                document.getElementById('successMessage').textContent = 'Successfully created!';
-                document.getElementById('successMessage').style.display = 'block';
-                form.querySelectorAll('input, select').forEach(input => input.disabled = true);
-            }
-        });
-
-        const createFields = JSON.parse(localStorage.getItem('createFields'));
-        const apiEndpoint = localStorage.getItem('apiEndpoint');
-        if (createFields && apiEndpoint) {
-            renderFormFields(createFields, apiEndpoint);
+        if (response.status !== 201) {
+          const errorData = await response.json();
+          document.getElementById('errorMessage').textContent = errorData.message;
+          document.getElementById('errorMessage').style.display = 'block';
+        } else {
+          document.getElementById('errorMessage').style.display = 'none';
+          document.getElementById('successMessage').textContent = 'Successfully created!';
+          document.getElementById('successMessage').style.display = 'block';
+          document.getElementById('cancelButton').innerText = 'Close';
+          document.getElementById('submitButton').style.display = 'none';
+          form.querySelectorAll('input, select').forEach((input) => (input.disabled = true));
         }
+      });
+
+      if (createFields && apiEndpoint) {
+        renderFormFields(createFields, apiEndpoint);
+      }
     </script>
-</body>
+  </body>
 </html>
