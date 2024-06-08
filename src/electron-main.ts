@@ -307,21 +307,8 @@ ipcMain.on('open-webview', (event, siteUrl) => {
   createWebViewWindow(siteUrl);
 });
 
-async function waitForBackend() {
-  while (true) {
-    try {
-      await axios.get('http://localhost:3000/app/health-check');
-      break;
-    } catch (error) {
-      console.log('Waiting for backend to be ready...');
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    }
-  }
-}
 app.on('ready', async () => {
-  await waitForBackend();
-  createWindow();
-  createMenu().catch((error) => console.error('Failed to create menu:', error));
+  createLoginWindow();
 });
 
 app.on('window-all-closed', () => {
@@ -332,7 +319,7 @@ app.on('window-all-closed', () => {
 
 app.on('activate', () => {
   if (mainWindow === null) {
-    createWindow();
+    createLoginWindow();
   }
 });
 
