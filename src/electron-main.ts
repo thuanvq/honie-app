@@ -310,7 +310,12 @@ ipcMain.on('open-webview', (event, siteUrl) => {
 app.on('ready', async () => {
   createLoginWindow();
 });
-
+ipcMain.on('login-success', () => {
+  if (loginWindow) {
+    loginWindow.close();
+  }
+  createWindow();
+});
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
