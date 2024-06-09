@@ -26,8 +26,27 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
       }
 
+      .title {
+        text-align: center;
+        flex-grow: 1;
+        margin: 0;
+        /* background-color: #7b1fa2; */
+        border: none;
+        color: #fff;
+        padding: 12px 24px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 22px;
+        font-weight: 900;
+        margin-right: 10px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
       .container {
-        max-width: 800px;
+        /* max-width: 800px; */
         margin: 20px auto;
         background-color: #fff;
         border-radius: 10px;
@@ -52,6 +71,10 @@
         font-weight: bold;
         display: block;
         margin-bottom: 5px;
+      }
+
+      .property-label {
+        font-weight: bold;
       }
 
       .property p {
@@ -91,7 +114,7 @@
       }
 
       .button:hover {
-        background-color: #4a148c;
+        background-color: #8b3bee;
       }
 
       .errorMessage {
@@ -102,17 +125,18 @@
   </head>
   <body>
     <header>
-      <button id="refetchButton" class="button" style="display: none">Refetch</button>
       <button id="jsonButton" class="button" style="display: none">JSON</button>
+      <label id="title" class="title">Detail Screen</label>
+      <button id="refetchButton" class="button" style="display: block">Refetch</button>
     </header>
     <div class="container">
       <div class="content" id="detailContent">
         <!-- Detail content will be dynamically populated here -->
       </div>
     </div>
-    <div class="container" id="jsonDisplay" style="display: none">
+    <pre class="container content" id="jsonDisplay" style="display: none">
       <!-- JSON data will be displayed here -->
-    </div>
+    </pre>
 
     <script src="detail.js"></script>
   </body>

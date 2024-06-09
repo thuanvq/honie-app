@@ -134,8 +134,8 @@ if (typeof CommonListComponent === 'undefined') {
         headers.forEach((header) => {
           let tdClass = '';
           let cellValue = item[header.key] || '';
-          if (header.key === 'pid' && cellValue) {
-            cellValue = `<a href="#" onclick="openAdsense('${item.pid}')">${item.pid}</a>`;
+          if (header.key === this.primary && cellValue) {
+            cellValue = `<a href="#" onclick="openDetail({apiEndpoint: '${this.config.apiEndpoint}/detail',key: '${this.primary}', value: '${cellValue}'})">${cellValue}</a>`;
           } else if (header.key === 'emailId' && cellValue) {
             cellValue = `<a href="#" onclick="openEmail('${item.emailId}')">${item.emailId}</a>`;
           } else if (header.key === 'website' && cellValue) {
@@ -269,8 +269,8 @@ if (typeof CommonListComponent === 'undefined') {
   function loadCommonListComponent(apiEndpoint) {
     new CommonListComponent({ apiEndpoint });
   }
-  window.openAdsense = function (pid) {
-    window.electron.ipcRenderer.send('open-adsense', pid);
+  window.openDetail = function (input) {
+    window.electron.ipcRenderer.send('open-detail', input);
   };
   window.openEmail = function (id) {
     window.electron.ipcRenderer.send('open-email', id);

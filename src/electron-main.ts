@@ -128,7 +128,8 @@ async function createMenu() {
     });
 
     const menu = Menu.buildFromTemplate(menuTemplate);
-    Menu.setApplicationMenu(menu);
+    mainWindow.setMenu(menu);
+    // Menu.setApplicationMenu(menu);
   } catch (error) {
     console.error('Failed to fetch menu template:', error);
   }
@@ -164,7 +165,7 @@ async function createWindow() {
   });
 }
 
-function createAdsenseWindow(pid: string) {
+function createDetailWindow(apiEndpoint: string, key: string, value: string) {
   let adsenseWindow: BrowserWindow | null = new BrowserWindow({
     width: width * 0.75,
     height: height - 100,
@@ -173,13 +174,14 @@ function createAdsenseWindow(pid: string) {
       nodeIntegration: false,
       contextIsolation: true,
     },
+    autoHideMenuBar: true,
   });
 
   const detailUrl = url.format({
-    pathname: path.join(__dirname, '..', 'src', 'frontend', 'adsense-detail', 'adsense-detail.html'),
+    pathname: path.join(__dirname, '..', 'src', 'frontend', 'detail.html'),
     protocol: 'file:',
     slashes: true,
-    search: `?pid=${pid}`,
+    search: `?apiEndpoint=${encodeURIComponent(apiEndpoint)}&key=${key}&value=${value}`,
   });
 
   adsenseWindow.loadURL(detailUrl);
@@ -189,8 +191,8 @@ function createAdsenseWindow(pid: string) {
   });
 }
 
-ipcMain.on('open-adsense', (event, pid) => {
-  createAdsenseWindow(pid);
+ipcMain.on('open-detail', (event, data) => {
+  createDetailWindow(data.apiEndpoint, data.key, data.value);
 });
 
 function createFormWindow(key: string) {
@@ -202,6 +204,7 @@ function createFormWindow(key: string) {
       nodeIntegration: false,
       contextIsolation: true,
     },
+    autoHideMenuBar: true,
   });
 
   const detailUrl = url.format({
@@ -231,6 +234,7 @@ function createEmailWindow(id: string) {
       nodeIntegration: false,
       contextIsolation: true,
     },
+    autoHideMenuBar: true,
   });
 
   const detailUrl = url.format({
@@ -259,6 +263,7 @@ function createRefetchWindow(pid: string) {
       nodeIntegration: false,
       contextIsolation: true,
     },
+    autoHideMenuBar: true,
   });
 
   const detailUrl = url.format({
@@ -289,6 +294,7 @@ async function createWebViewWindow(siteUrl) {
       contextIsolation: true, // Enable context isolation
       webviewTag: true,
     },
+    autoHideMenuBar: true,
   });
 
   const webViewUrl = url.format({
