@@ -4,32 +4,38 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Common List</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="list.css" />
   </head>
   <body>
-    <div class="header-container">
-      <button id="createButton" style="display: none">Create</button>
-      <button id="refetchButton" style="display: none">Refetch</button>
-      <h1 id="list-title" class="title"></h1>
-      <div id="summary-text" class="summary-text"></div>
-    </div>
-    <div class="filter-pagination-section">
-      <div class="filter-section"></div>
-      <div class="pagination-section">
-        <span id="total-records">Total Records: 0</span>
-        <button id="prevPageTop">Previous</button>
-        <button id="nextPageTop">Next</button>
+    <div class="container">
+      <div class="header-container">
+        <button id="createButton" class="button" style="display: none">Create</button>
+        <button id="refetchButton" class="button" style="display: none">Refetch</button>
+        <h1 id="list-title" class="title">Loading...</h1>
+        <div id="summary-text" class="summary-text"></div>
       </div>
-    </div>
-    <div class="table-container">
-      <table id="common-table">
-        <thead>
-          <tr id="table-headers">
-            <!-- Headers will be populated here -->
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <div class="filter-pagination-section">
+        <div class="filter-section">
+          <!-- <label for="filterInput" class="filter-label">Filter:</label>
+          <input type="text" id="filterInput" class="filter-input" placeholder="Type to filter..." /> -->
+        </div>
+        <div class="pagination-section">
+          <span id="total-records">Total Records: 0</span>
+          <button id="prevPageTop" class="button">Previous</button>
+          <button id="nextPageTop" class="button">Next</button>
+        </div>
+      </div>
+      <div class="table-container">
+        <table id="common-table">
+          <thead>
+            <tr id="table-headers">
+              <!-- Headers will be populated here -->
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
     <script src="list.js"></script>
     <script>

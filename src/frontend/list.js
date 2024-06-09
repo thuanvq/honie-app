@@ -36,8 +36,10 @@ if (typeof CommonListComponent === 'undefined') {
         const label = document.createElement('label');
         label.innerText = `Filter by ${filter.label}:`;
         label.setAttribute('for', `${filter.key}Filter`);
+        label.classList.add('filter-label');
 
         const input = document.createElement('input');
+        input.classList.add('filter-label');
         input.id = `${filter.key}Filter`;
         input.type = filter.type;
         input.placeholder = `Enter ${filter.label.toLowerCase()}`;
@@ -134,12 +136,12 @@ if (typeof CommonListComponent === 'undefined') {
         headers.forEach((header) => {
           let tdClass = '';
           let cellValue = item[header.key] || '';
-          if (header.key === this.primary && cellValue) {
+          if ((header.key === 'website' || header.label === 'Website') && cellValue) {
+            cellValue = `<a href="#" onclick="openWebView('${item[header.key]}')">${item[header.key]}</a>`;
+          } else if (header.key === this.primary && cellValue) {
             cellValue = `<a href="#" onclick="openDetail({apiEndpoint: '${this.config.apiEndpoint}/detail',key: '${this.primary}', value: '${cellValue}'})">${cellValue}</a>`;
           } else if (header.key === 'emailId' && cellValue) {
             cellValue = `<a href="#" onclick="openEmail('${item.emailId}')">${item.emailId}</a>`;
-          } else if (header.key === 'website' && cellValue) {
-            cellValue = `<a href="#" onclick="openWebView('${item.website}')">${item.website}</a>`;
           } else if (header.key === 'action') {
             const runIcon = `./assets/${header.type}-run-icon.svg`;
             if (item[header.type]) {

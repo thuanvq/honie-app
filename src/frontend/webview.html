@@ -64,13 +64,13 @@
 
       document.getElementById('go-button').addEventListener('click', () => {
         const url = document.getElementById('address-bar').value;
-        document.getElementById('webview').src = url;
+        document.getElementById('webview').src = formatUrl(url);
       });
 
       document.getElementById('address-bar').addEventListener('keyup', (event) => {
         if (event.key === 'Enter') {
           const url = event.target.value;
-          document.getElementById('webview').src = url;
+          document.getElementById('webview').src = formatUrl(url);
         }
       });
 
@@ -87,6 +87,16 @@
       webview.addEventListener('dom-ready', () => {
         document.getElementById('address-bar').value = webview.getURL();
       });
+
+      function formatUrl(url) {
+        if (!url.startsWith('https://')) {
+          // Remove any leading "http://" or "https://"
+          url = url.replace(/^(https?:\/\/)?/, '');
+          // Prepend "https://"
+          url = 'https://' + url;
+        }
+        return url;
+      }
     </script>
   </body>
 </html>
