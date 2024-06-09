@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', function () {
   let pid = params.get('pid');
 
   function fetchDetail(pid) {
-    fetch(`http://localhost:3000/adsense/detail?pid=${pid}`)
+    fetchWithToken(`/adsense/detail?pid=${pid}`)
       .then((response) => response.json())
       .then((data) => {
         if (Object.keys(data).length === 0) {
@@ -172,3 +172,11 @@ function generateReportRow(report) {
 window.openRefetch = function (pid) {
   window.electron.ipcRenderer.send('open-refetch-window', pid);
 };
+async function fetchWithToken(path, options = {}) {
+  const token = localStorage.getItem('token');
+  const api_root = await window.electron.getApiRoot();
+  const headers = { ...options.headers, Authorization: `Bearer ${token}` };
+  const updatedOptions = { ...options, headers };
+
+  return await fetch(`${api_root}${path}`, updatedOptions);
+}

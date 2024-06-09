@@ -72,7 +72,7 @@ if (typeof CommonListComponent === 'undefined') {
       query.set('order', this.currentSort.order);
 
       try {
-        const response = await fetch(`${this.config.apiEndpoint}?${query.toString()}`);
+        const response = await fetchWithToken(`${this.config.apiEndpoint}?${query.toString()}`);
         const { headers, data, filters, title, totalRecords, summary, primary, create, refetch } = await response.json();
         this.primary = primary || 'pid';
         if (!init) {
@@ -85,31 +85,37 @@ if (typeof CommonListComponent === 'undefined') {
         }
         this.totalRecords.innerText = `Total Records: ${totalRecords}`;
         if (create) {
-          document.getElementById('createButton').style.display = 'block';
-          document.getElementById('createButton').addEventListener('click', () => {
-            const timestamp = new Date().getTime();
-            localStorage.setItem(timestamp, JSON.stringify({ createFields: create, apiEndpoint: this.config.apiEndpoint }));
-            window.electron.ipcRenderer.send('open-form', timestamp);
-          });
+          const buttonExist = window.getComputedStyle(document.getElementById('createButton')).display === 'block';
+          if (!buttonExist) {
+            document.getElementById('createButton').style.display = 'block';
+            document.getElementById('createButton').addEventListener('click', () => {
+              const timestamp = new Date().getTime();
+              localStorage.setItem(timestamp, JSON.stringify({ createFields: create, apiEndpoint: this.config.apiEndpoint }));
+              window.electron.ipcRenderer.send('open-form', timestamp);
+            });
+          }
         }
         if (refetch) {
-          document.getElementById('refetchButton').style.display = 'block';
-          document.getElementById('refetchButton').addEventListener('click', async () => {
-            try {
-              document.getElementById('refetchButton').innerText = 'Wait...';
-              const refetchResponse = await fetch(`${this.config.apiEndpoint}/refetch`);
-              if (refetchResponse.status === 200) {
-                this.fetchAndRenderData();
-                document.getElementById('refetchButton').innerText = 'Refetch';
-              } else {
-                console.error('Refetch failed:', refetchResponse.statusText);
+          const buttonExist = window.getComputedStyle(document.getElementById('refetchButton')).display === 'block';
+          if (!buttonExist) {
+            document.getElementById('refetchButton').style.display = 'block';
+            document.getElementById('refetchButton').addEventListener('click', async () => {
+              try {
+                document.getElementById('refetchButton').innerText = 'Wait...';
+                const refetchResponse = await fetchWithToken(`${this.config.apiEndpoint}/refetch`);
+                if (refetchResponse.status === 200) {
+                  this.fetchAndRenderData();
+                  document.getElementById('refetchButton').innerText = 'Refetch';
+                } else {
+                  console.error('Refetch failed:', refetchResponse.statusText);
+                  document.getElementById('refetchButton').innerText = 'Refetch';
+                }
+              } catch (error) {
+                console.error('Error during refetch:', error);
                 document.getElementById('refetchButton').innerText = 'Refetch';
               }
-            } catch (error) {
-              console.error('Error during refetch:', error);
-              document.getElementById('refetchButton').innerText = 'Refetch';
-            }
-          });
+            });
+          }
         }
 
         this.tableBody.innerHTML = '';
@@ -164,7 +170,7 @@ if (typeof CommonListComponent === 'undefined') {
           const value = event.target.getAttribute('data-primary');
           const type = event.target.getAttribute('data-type');
           try {
-            const response = await fetch(`${this.config.apiEndpoint}/${type}?${this.primary}=${value}`, { method: 'POST' });
+            const response = await fetchWithToken(`${this.config.apiEndpoint}/${type}?${this.primary}=${value}`, { method: 'POST' });
             if (response.status === 201) {
               event.target.src = `./assets/${type}-done-icon.svg`;
               event.target.classList.remove('clickable');
@@ -289,4 +295,13 @@ function formatDate(value) {
 
 function formatNumber(value) {
   return value !== undefined && value !== null ? value.toLocaleString() : '';
+}
+
+async function fetchWithToken(path, options = {}) {
+  const token = localStorage.getItem('token');
+  const api_root = await window.electron.getApiRoot();
+  const headers = { ...options.headers, Authorization: `Bearer ${token}` };
+  const updatedOptions = { ...options, headers };
+
+  return await fetch(`${api_root}${path}`, updatedOptions);
 }

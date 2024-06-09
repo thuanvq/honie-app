@@ -63,7 +63,7 @@
 
       async function fetchEmailDetail(id) {
         try {
-          const response = await fetch(`http://localhost:3000/gmail/inbox/detail?id=${id}`);
+          const response = await fetchWithToken(`/gmail/inbox/detail?id=${id}`);
           const emailData = await response.json();
 
           // Update the HTML elements with the email data
@@ -85,6 +85,14 @@
         fetchEmailDetail(emailId);
       } else {
         console.error('No email ID found in URL');
+      }
+      async function fetchWithToken(path, options = {}) {
+        const token = localStorage.getItem('token');
+        const api_root = await window.electron.getApiRoot();
+        const headers = { ...options.headers, Authorization: `Bearer ${token}` };
+        const updatedOptions = { ...options, headers };
+
+        return await fetch(`${api_root}${path}`, updatedOptions);
       }
     </script>
   </body>

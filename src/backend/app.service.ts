@@ -1,25 +1,20 @@
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import axios from 'axios';
-import { Cache } from 'cache-manager';
-import { Collection } from 'mongodb';
-import { MongoDBService } from './mongodb/mongodb.service';
 
 @Injectable()
 export class AppService {
-  private userCollection: Collection;
-  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache, private readonly mongodbService: MongoDBService) {
-    this.userCollection = this.mongodbService.getCollection('honie');
-  }
+  // private userCollection: Collection;
+  // constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache, private readonly mongodbService: MongoDBService) {
+  //   this.userCollection = this.mongodbService.getCollection('honie');
+  // }
 
   async login(input: any) {
-    const user = await this.userCollection.findOne(input);
-    if (!user) {
-      throw new UnauthorizedException('Incorrect username or password');
-    }
-    await this.cacheManager.set(`user`, JSON.stringify(user), 86400);
-
-    return user;
+    // const user = await this.userCollection.findOne(input);
+    // if (!user) {
+    //   throw new UnauthorizedException('Incorrect username or password');
+    // }
+    // await this.cacheManager.set(`user`, JSON.stringify(user), 86400);
+    // return user;
   }
   getTemplate(): any[] {
     return [

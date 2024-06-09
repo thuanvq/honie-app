@@ -30,6 +30,7 @@
 
       .form-group {
         margin-bottom: 15px;
+        margin-right: 10px;
       }
 
       label {
@@ -84,6 +85,11 @@
       </form>
     </div>
     <script>
+      let api_root;
+      window.addEventListener('DOMContentLoaded', async () => {
+        api_root = await window.electron.getApiRoot();
+        console.log(api_root);
+      });
       document.getElementById('loginForm').addEventListener('submit', async function (event) {
         event.preventDefault();
 
@@ -93,7 +99,7 @@
 
         // Replace with your backend authentication logic
         try {
-          const response = await fetch('http://localhost:3000/app/login', {
+          const response = await fetch(`${api_root}/auth/sign-in`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -102,7 +108,10 @@
           });
           console.log(response);
           if (response.status === 201) {
-            window.electron.ipcRenderer.send('login-success');
+            const { username, token } = await response.json();
+            localStorage.setItem('token', token);
+            localStorage.setItem('username', username);
+            window.electron.ipcRenderer.send('login-success', token);
           } else {
             const result = await response.json();
             errorMessage.textContent = result.message || 'Login failed. Please try again.';

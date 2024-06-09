@@ -1,14 +1,21 @@
 import axios from 'axios';
+import * as dotenv from 'dotenv';
 import { BrowserWindow, Menu, app, screen as electronScreen, globalShortcut, ipcMain, shell } from 'electron';
 import * as path from 'path';
 import * as url from 'url';
+
+dotenv.config();
+const api_root = process.env.API_ROOT;
 
 require('electron-reload')(__dirname, {
   electron: path.join(__dirname, '..', 'node_modules', '.bin', 'electron'),
 });
 
+let width, height;
+
 let mainWindow: BrowserWindow | null;
 let loginWindow: BrowserWindow | null;
+let token;
 function createLoginWindow() {
   if (mainWindow) {
     mainWindow.close();
@@ -37,7 +44,7 @@ function createLoginWindow() {
 
 async function createMenu() {
   try {
-    const response = await axios.get('http://localhost:3000/app/template');
+    const response = await axios.get(`${api_root}/app/template`, { headers: { Authorization: `Bearer ${token}` } });
     const templates = response.data;
 
     const menuTemplate = templates.map((template) => ({
@@ -128,8 +135,6 @@ async function createMenu() {
 }
 
 async function createWindow() {
-  const { width, height } = electronScreen.getPrimaryDisplay().workAreaSize;
-
   mainWindow = new BrowserWindow({
     width,
     height,
@@ -161,8 +166,8 @@ async function createWindow() {
 
 function createAdsenseWindow(pid: string) {
   let adsenseWindow: BrowserWindow | null = new BrowserWindow({
-    width: 1600,
-    height: 1200,
+    width: width * 0.75,
+    height: height - 100,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
@@ -219,8 +224,8 @@ ipcMain.on('open-form', (event, key) => {
 
 function createEmailWindow(id: string) {
   let emailWindow: BrowserWindow | null = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: width * 0.5,
+    height: height - 100,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
@@ -247,8 +252,8 @@ ipcMain.on('open-email', (event, id) => {
 });
 function createRefetchWindow(pid: string) {
   let refetchWindow: BrowserWindow | null = new BrowserWindow({
-    width: 1600,
-    height: 1200,
+    width: width * 0.75,
+    height: height - 100,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
@@ -276,8 +281,8 @@ ipcMain.on('open-refetch-window', (event, pid) => {
 
 async function createWebViewWindow(siteUrl) {
   let webViewWindow = new BrowserWindow({
-    width: 1600,
-    height: 1200,
+    width: width * 0.75,
+    height,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
@@ -308,9 +313,13 @@ ipcMain.on('open-webview', (event, siteUrl) => {
 });
 
 app.on('ready', async () => {
+  const workAreaSize = electronScreen.getPrimaryDisplay().workAreaSize;
+  width = workAreaSize.width;
+  height = workAreaSize.height;
   createLoginWindow();
 });
-ipcMain.on('login-success', () => {
+ipcMain.on('login-success', (event, t) => {
+  token = t;
   if (loginWindow) {
     loginWindow.close();
   }
@@ -331,4 +340,8 @@ app.on('activate', () => {
 app.on('will-quit', () => {
   // Unregister all shortcuts.
   globalShortcut.unregisterAll();
+});
+ipcMain.handle('get-api-root', () => {
+  // Ensure only serializable data is sent
+  return api_root;
 });
